@@ -17,76 +17,30 @@ import {
   Utensils,
   Zap,
   ShieldCheck,
-  X,
-  Check,
-  ZoomIn,
-  RotateCcw,
 } from "lucide-react";
-
-type ProgramCard = {
-  id: string;
-  badge: string;
-  sub: string;
-  title: string;
-  goal: string;
-  duration: string;
-  desc: string;
-  highlights: string[];
-  oldPrice: number;
-  price: number;
-  image: string;
-  cartName: string;
-};
-
-type TransformationItem = {
-  num: string;
-  name: string;
-  tag: string;
-  quote: string;
-  image: string;
-};
 
 export default function Home() {
   const { addToCart } = useCart();
   const { convert } = useCurrency();
 
-  // Progressive step-by-step selection
-  const [genderTab, setGenderTab] = useState<"men" | "women" | null>(null);
-  const [categoryTab, setCategoryTab] = useState<"training" | "nutrition" | null>(null);
-  const [locationTab, setLocationTab] = useState<"gym" | "home" | null>(null);
-  const [freq, setFreq] = useState<"2x" | "3x" | "4x" | null>(null);
+  const [genderTab, setGenderTab] = useState<"men" | "women">("men");
+  const [categoryTab, setCategoryTab] = useState<"training" | "nutrition">("training");
+  const [locationTab, setLocationTab] = useState<"gym" | "home">("gym");
+  const [freq, setFreq] = useState<"2x" | "3x" | "4x">("3x");
 
-  // In-page Modals (no redirects)
-  const [selectedProgram, setSelectedProgram] = useState<ProgramCard | null>(null);
-  const [lightboxItem, setLightboxItem] = useState<TransformationItem | null>(null);
+  const isMen = genderTab === "men";
 
-  const isMen = genderTab !== "women";
-
-  const resetFilters = () => {
-    setGenderTab(null);
-    setCategoryTab(null);
-    setLocationTab(null);
-    setFreq(null);
-  };
-
-  const trainingCards: ProgramCard[] =
+  const trainingCards =
     locationTab === "gym"
       ? [
           {
             id: `${genderTab}-beginner-${freq}`,
             badge: `For ${isMen ? "Men" : "Women"} • Gym Beginner`,
-            sub: `GYM TRAINING / ${freq?.toUpperCase()} PER WEEK`,
+            sub: `GYM TRAINING / ${freq.toUpperCase()} PER WEEK`,
             title: isMen ? "BEGINNER GYM PLAN" : "WOMEN'S BEGINNER PLAN",
-            cartName: `${isMen ? "BEGINNER GYM PLAN" : "WOMEN'S BEGINNER PLAN"} (${freq}/wk)`,
             goal: isMen ? "Foundation & Fat Loss" : "Toning, Glutes & Conditioning",
             duration: "8-Week Program",
             desc: "Build proper form, boost daily energy, and create visible transformation with a structured gym routine.",
-            highlights: [
-              `Structured ${freq} per week gym split`,
-              "Progressive overload & exact set/rep targets",
-              "Unlocks Exercise Videos & Healthy Recipes in Vault",
-              "Instant PDF download after approval",
-            ],
             oldPrice: 22,
             price: 15,
             image: isMen ? "/images/beginner.jpg" : "/images/women1.jpg",
@@ -94,18 +48,11 @@ export default function Home() {
           {
             id: `${genderTab}-advanced-${freq}`,
             badge: `For ${isMen ? "Men" : "Women"} • Gym Advanced`,
-            sub: `GYM TRAINING / ${freq?.toUpperCase()} PER WEEK`,
+            sub: `GYM TRAINING / ${freq.toUpperCase()} PER WEEK`,
             title: isMen ? "ADVANCED GYM PLAN" : "WOMEN'S ADVANCED PLAN",
-            cartName: `${isMen ? "ADVANCED GYM PLAN" : "WOMEN'S ADVANCED PLAN"} (${freq}/wk)`,
             goal: isMen ? "Muscle Domination" : "Sculpted Physique & Strength",
             duration: "8-Week Program",
             desc: "Designed for experienced lifters ready for higher volume, progressive overload, and peak aesthetics.",
-            highlights: [
-              `High-intensity ${freq} per week hypertrophy split`,
-              "Advanced techniques (drop sets & supersets)",
-              "Unlocks Exercise Videos & Healthy Recipes in Vault",
-              "Instant PDF download after approval",
-            ],
             oldPrice: 22,
             price: 15,
             image: isMen ? "/images/advanced.jpg" : "/images/women2.jpg",
@@ -115,18 +62,11 @@ export default function Home() {
           {
             id: `${genderTab}-home-beginner-${freq}`,
             badge: `For ${isMen ? "Men" : "Women"} • Home Workout`,
-            sub: `HOME WORKOUT / ${freq?.toUpperCase()} PER WEEK`,
+            sub: `HOME WORKOUT / ${freq.toUpperCase()} PER WEEK`,
             title: isMen ? "HOME BODYWEIGHT & DUMBBELL" : "WOMEN'S HOME SCULPT",
-            cartName: `${isMen ? "HOME BODYWEIGHT & DUMBBELL" : "WOMEN'S HOME SCULPT"} (${freq}/wk)`,
             goal: "Fat Loss & Full-Body Tone",
             duration: "8-Week Home Program",
             desc: "Zero gym required. Train from home with minimal equipment while burning fat and building lean definition.",
-            highlights: [
-              `Flexible ${freq} per week home sessions`,
-              "Minimal equipment required (bodyweight / dumbbells)",
-              "Unlocks Exercise Videos & Healthy Recipes in Vault",
-              "Instant PDF download after approval",
-            ],
             oldPrice: 22,
             price: 15,
             image: isMen ? "/images/IMG_7392.jpg" : "/images/women3.jpg",
@@ -134,40 +74,25 @@ export default function Home() {
           {
             id: `${genderTab}-home-advanced-${freq}`,
             badge: `For ${isMen ? "Men" : "Women"} • Home Pro`,
-            sub: `HOME WORKOUT / ${freq?.toUpperCase()} PER WEEK`,
+            sub: `HOME WORKOUT / ${freq.toUpperCase()} PER WEEK`,
             title: isMen ? "HOME ATHLETE PROTOCOL" : "WOMEN'S HOME GLUTE & CORE PRO",
-            cartName: `${isMen ? "HOME ATHLETE PROTOCOL" : "WOMEN'S HOME GLUTE & CORE PRO"} (${freq}/wk)`,
             goal: "Strength & Conditioning at Home",
             duration: "8-Week Home Program",
             desc: "High-intensity home sessions using progressive bodyweight, bands, and dumbbells for real muscle stimulus.",
-            highlights: [
-              `Intense ${freq} per week progressive home split`,
-              "Targeted muscle & conditioning blocks",
-              "Unlocks Exercise Videos & Healthy Recipes in Vault",
-              "Instant PDF download after approval",
-            ],
             oldPrice: 22,
             price: 15,
             image: isMen ? "/images/beginner.jpg" : "/images/women1.jpg",
           },
         ];
 
-  const nutritionCards: ProgramCard[] = [
+  const nutritionCards = [
     {
       id: `${genderTab}-nutrition-bulking`,
       badge: `${isMen ? "Men" : "Women"} • Muscle Gain`,
-      sub: "NUTRITION BLUEPRINT",
       title: "BULKING NUTRITION PLAN",
-      cartName: `BULKING NUTRITION PLAN (${isMen ? "Men" : "Women"})`,
       goal: "Clean Muscle Surplus",
       duration: "Full Guide + Vault Recipes",
       desc: "Structured high-protein surplus designed to add lean mass without unnecessary fat gain.",
-      highlights: [
-        "Clean calorie surplus & macro guidelines",
-        "High-protein meal structure for busy days",
-        "Unlocks Member Vault Recipes & Exercise Videos",
-        "Instant PDF download after approval",
-      ],
       oldPrice: 22,
       price: 15,
       image: "/images/nutrition1.jpg",
@@ -175,25 +100,17 @@ export default function Home() {
     {
       id: `${genderTab}-nutrition-cutting`,
       badge: `${isMen ? "Men" : "Women"} • Fat Loss`,
-      sub: "NUTRITION BLUEPRINT",
       title: "CUTTING NUTRITION PLAN",
-      cartName: `CUTTING NUTRITION PLAN (${isMen ? "Men" : "Women"})`,
       goal: "Shred & Definition",
       duration: "Full Guide + Vault Recipes",
       desc: "Precision calorie deficit to drop body fat while preserving muscle density and strength.",
-      highlights: [
-        "Sustainable fat-loss deficit without starvation",
-        "High-satiety, high-protein daily framework",
-        "Unlocks Member Vault Recipes & Exercise Videos",
-        "Instant PDF download after approval",
-      ],
       oldPrice: 22,
       price: 15,
       image: "/images/nutrition2.png",
     },
   ];
 
-  const transformations: TransformationItem[] = [
+  const transformations = [
     {
       num: "01",
       name: "Client Transformation",
@@ -219,15 +136,6 @@ export default function Home() {
       image: "/images/image00003.jpeg",
     },
   ];
-
-  const showTrainingResults =
-    genderTab !== null &&
-    categoryTab === "training" &&
-    locationTab !== null &&
-    freq !== null;
-
-  const showNutritionResults =
-    genderTab !== null && categoryTab === "nutrition";
 
   return (
     <main className="flex flex-col min-h-screen bg-evo-surface text-stone-950 overflow-x-clip">
@@ -302,13 +210,14 @@ export default function Home() {
                 <p className="text-[10px] font-black uppercase tracking-widest text-red-400">
                   Training &amp; Nutrition Plans
                 </p>
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-0.5">
+                <div className="flex items-baseline gap-2 mt-0.5">
                   <span className="text-xs text-stone-500 line-through font-bold">
                     {convert(22)}
                   </span>
-                  <span className="text-xl sm:text-2xl font-black text-white">
+                  <span className="text-2xl font-black text-white">
                     {convert(15)}
                   </span>
+                  
                 </div>
               </div>
             </div>
@@ -370,9 +279,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* INTERACTIVE FEATURE BAR — FULLY READABLE ON MOBILE (NO TRUNCATION) */}
+      {/* INTERACTIVE KINETIC FEATURE BAR (REPLACES CLICHÉ MARQUEE) */}
       <section className="relative z-20 -mt-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 bg-white/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-2.5 sm:p-4 shadow-xl shadow-stone-900/5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-white/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-3 sm:p-4 shadow-xl shadow-stone-900/5">
           {[
             { icon: Dumbbell, title: "Gym & Home", sub: "Train anywhere" },
             { icon: Zap, title: "2x • 3x • 4x", sub: "Fits your week" },
@@ -383,16 +292,16 @@ export default function Home() {
             return (
               <div
                 key={item.title}
-                className="group flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 rounded-2xl bg-stone-50/70 sm:bg-transparent hover:bg-red-800 hover:text-white transition-all duration-300 cursor-default"
+                className="group flex items-center gap-3 p-3 rounded-2xl hover:bg-red-800 hover:text-white transition-all duration-300 cursor-default"
               >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-red-50 text-red-800 group-hover:bg-white/15 group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors">
-                  <Icon size={17} />
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-800 group-hover:bg-white/15 group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors">
+                  <Icon size={18} />
                 </div>
-                <div>
-                  <p className="text-[11px] sm:text-xs font-black uppercase tracking-tight leading-tight">
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-tight truncate">
                     {item.title}
                   </p>
-                  <p className="text-[10px] font-semibold text-stone-500 group-hover:text-red-100 leading-snug mt-0.5">
+                  <p className="text-[10px] font-bold text-stone-500 group-hover:text-red-100 truncate">
                     {item.sub}
                   </p>
                 </div>
@@ -446,11 +355,11 @@ export default function Home() {
             <p className="text-[10px] font-black uppercase tracking-widest text-red-800 mb-2">
               Duo Package (2 People)
             </p>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-6">
+            <div className="flex items-baseline gap-3 mb-6">
               <span className="text-sm text-stone-400 line-through font-bold">
                 {convert(85)}
               </span>
-              <span className="text-3xl sm:text-4xl font-black text-stone-950">
+              <span className="text-4xl font-black text-stone-950">
                 {convert(15)}
               </span>
             </div>
@@ -472,66 +381,46 @@ export default function Home() {
         </div>
       </ScrollReveal>
 
-      {/* 3. PROGRESSIVE STEP-BY-STEP PROGRAM BUILDER */}
+      {/* 3. PROGRAMS & NUTRITION (MEN BLUE / WOMEN PINK + GYM / HOME WORKOUT) */}
       <section id="programs" className="py-14 relative overflow-hidden">
         <div
           className={`pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[140px] transition-colors duration-700 ${
-            genderTab === "women"
-              ? "bg-pink-500/12"
-              : genderTab === "men"
-              ? "bg-blue-500/10"
-              : "bg-red-700/5"
+            isMen ? "bg-blue-500/10" : "bg-pink-500/12"
           }`}
         />
 
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.92]">
-                Success Starts <br />
-                With a <span className="text-red-800">Decision</span>
-              </h2>
-            </div>
+            <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.92]">
+              Success Starts <br />
+              With a <span className="text-red-800">Decision</span>
+            </h2>
             <p className="text-xs sm:text-sm text-stone-600 max-w-xs font-medium">
-              Tap step by step to unlock the exact plan built for you. Full
-              PDFs, videos, and recipes unlock in your Vault after purchase.
+              Choose your plan below. Full PDFs, exercise videos, and recipes
+              unlock inside your Vault after purchase.
             </p>
           </div>
 
-          {/* COMPACT PROGRESSIVE STEP SELECTOR */}
-          <div className="bg-white/95 backdrop-blur-md border border-stone-200/90 rounded-3xl p-4 sm:p-6 mb-8 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black uppercase tracking-widest text-stone-500">
-                Build Your Plan
-              </span>
-              {genderTab && (
-                <button
-                  onClick={resetFilters}
-                  className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-stone-400 hover:text-red-800 transition-colors cursor-pointer"
-                >
-                  <RotateCcw size={12} /> Reset
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3.5">
-              {/* STEP 1: GENDER */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 sm:w-28 flex-shrink-0">
+          {/* LOGICAL FILTER PANEL */}
+          <div className="bg-white/90 backdrop-blur-md border border-stone-200/90 rounded-3xl p-4 sm:p-5 mb-10 space-y-3 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* STEP 1: MEN (BLUE) / WOMEN (PINK) */}
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
                   1. Category
-                </span>
-                <div className="flex flex-wrap gap-2">
+                </p>
+                <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200/80">
                   <button
                     onClick={() => setGenderTab("men")}
-                    className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                      genderTab === "men"
-                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-600/25"
-                        : "bg-blue-50 text-blue-700 border border-blue-200/70 hover:bg-blue-100"
+                    className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                      isMen
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30 scale-[1.02]"
+                        : "text-blue-700 bg-white/80 hover:bg-white"
                     }`}
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        genderTab === "men" ? "bg-white animate-pulse" : "bg-blue-500"
+                      className={`w-2 h-2 rounded-full ${
+                        isMen ? "bg-white animate-pulse" : "bg-blue-500"
                       }`}
                     />
                     For Men
@@ -539,15 +428,15 @@ export default function Home() {
 
                   <button
                     onClick={() => setGenderTab("women")}
-                    className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-                      genderTab === "women"
-                        ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25"
-                        : "bg-pink-50 text-pink-600 border border-pink-200/70 hover:bg-pink-100"
+                    className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                      !isMen
+                        ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30 scale-[1.02]"
+                        : "text-pink-600 bg-white/80 hover:bg-white"
                     }`}
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        genderTab === "women" ? "bg-white animate-pulse" : "bg-pink-500"
+                      className={`w-2 h-2 rounded-full ${
+                        !isMen ? "bg-white animate-pulse" : "bg-pink-500"
                       }`}
                     />
                     For Women
@@ -555,83 +444,80 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* STEP 2: FOCUS (UNLOCKS AFTER STEP 1) */}
-              {genderTab && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-2 border-t border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 sm:w-28 flex-shrink-0">
-                    2. Focus
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setCategoryTab("training")}
-                      className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                        categoryTab === "training"
-                          ? "bg-stone-950 text-white shadow-sm"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                      }`}
-                    >
-                      Training
-                    </button>
-                    <button
-                      onClick={() => setCategoryTab("nutrition")}
-                      className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                        categoryTab === "nutrition"
-                          ? "bg-stone-950 text-white shadow-sm"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                      }`}
-                    >
-                      Nutrition
-                    </button>
-                  </div>
+              {/* STEP 2: TRAINING / NUTRITION */}
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
+                  2. Focus
+                </p>
+                <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200/80">
+                  <button
+                    onClick={() => setCategoryTab("training")}
+                    className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                      categoryTab === "training"
+                        ? "bg-stone-950 text-white shadow-md scale-[1.01]"
+                        : "text-stone-600 bg-white/80 hover:bg-white hover:text-stone-950"
+                    }`}
+                  >
+                    Training
+                  </button>
+                  <button
+                    onClick={() => setCategoryTab("nutrition")}
+                    className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                      categoryTab === "nutrition"
+                        ? "bg-stone-950 text-white shadow-md scale-[1.01]"
+                        : "text-stone-600 bg-white/80 hover:bg-white hover:text-stone-950"
+                    }`}
+                  >
+                    Nutrition
+                  </button>
                 </div>
-              )}
+              </div>
+            </div>
 
-              {/* STEP 3: LOCATION (UNLOCKS IF TRAINING) */}
-              {genderTab && categoryTab === "training" && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-2 border-t border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 sm:w-28 flex-shrink-0">
+            {/* STEP 3 & 4 (ONLY WHEN TRAINING): GYM/HOME + FREQUENCY */}
+            {categoryTab === "training" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
                     3. Location
-                  </span>
-                  <div className="flex flex-wrap gap-2">
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200/80">
                     <button
                       onClick={() => setLocationTab("gym")}
-                      className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                      className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         locationTab === "gym"
-                          ? "bg-red-800 text-white shadow-sm"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                          ? "bg-red-800 text-white shadow-md shadow-red-900/20"
+                          : "text-stone-600 bg-white/80 hover:bg-white"
                       }`}
                     >
-                      <Dumbbell size={13} /> Gym
+                      <Dumbbell size={14} /> Gym Workout
                     </button>
                     <button
                       onClick={() => setLocationTab("home")}
-                      className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                      className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                         locationTab === "home"
-                          ? "bg-red-800 text-white shadow-sm"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                          ? "bg-red-800 text-white shadow-md shadow-red-900/20"
+                          : "text-stone-600 bg-white/80 hover:bg-white"
                       }`}
                     >
-                      <HomeIcon size={13} /> Home
+                      <HomeIcon size={14} /> Home Workout
                     </button>
                   </div>
                 </div>
-              )}
 
-              {/* STEP 4: WEEKLY SCHEDULE (UNLOCKS AFTER LOCATION) */}
-              {genderTab && categoryTab === "training" && locationTab && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 pt-2 border-t border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-400 sm:w-28 flex-shrink-0">
-                    4. Schedule
-                  </span>
-                  <div className="flex flex-wrap gap-2">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
+                    4. Weekly Schedule
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-stone-100 rounded-2xl border border-stone-200/80">
                     {(["2x", "3x", "4x"] as const).map((f) => (
                       <button
                         key={f}
                         onClick={() => setFreq(f)}
-                        className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                           freq === f
-                            ? "bg-red-800 text-white shadow-sm"
-                            : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                            ? "bg-red-800 text-white shadow-md shadow-red-900/20"
+                            : "text-stone-600 bg-white/80 hover:bg-white"
                         }`}
                       >
                         {f} / Wk
@@ -639,36 +525,17 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
-          {/* PROMPT BEFORE ALL STEPS ARE SELECTED */}
-          {!showTrainingResults && !showNutritionResults && (
-            <div className="bg-white/70 border border-dashed border-stone-300 rounded-3xl p-8 sm:p-10 text-center">
-              <p className="text-xs font-black uppercase tracking-widest text-red-800 mb-1">
-                {!genderTab
-                  ? "Step 1: Select For Men or For Women"
-                  : !categoryTab
-                  ? "Step 2: Choose Training or Nutrition"
-                  : !locationTab
-                  ? "Step 3: Pick Gym or Home Workout"
-                  : "Step 4: Select 2x, 3x, or 4x per week"}
-              </p>
-              <p className="text-xs text-stone-500">
-                Your matching programs will appear right here as soon as you finish selecting.
-              </p>
-            </div>
-          )}
-
-          {/* UNLOCKED TRAINING CARDS */}
-          {showTrainingResults && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* CARDS */}
+          {categoryTab === "training" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {trainingCards.map((card) => (
                 <div
                   key={card.id}
-                  onClick={() => setSelectedProgram(card)}
-                  className={`group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col cursor-pointer ${
+                  className={`group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col ${
                     isMen ? "hover:border-blue-600/60" : "hover:border-pink-500/60"
                   }`}
                 >
@@ -686,19 +553,13 @@ export default function Home() {
                     >
                       {card.badge}
                     </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProgram(card);
-                      }}
-                      aria-label={`View details for ${card.title}`}
-                      className={`absolute bottom-4 right-4 w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-12 cursor-pointer ${
+                    <div
+                      className={`absolute bottom-4 right-4 w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 ${
                         isMen ? "bg-blue-600" : "bg-pink-500"
                       }`}
                     >
                       <ArrowUpRight size={18} />
-                    </button>
+                    </div>
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col justify-between">
@@ -728,27 +589,26 @@ export default function Home() {
                       <p className="text-xs text-stone-600 leading-relaxed mb-6">{card.desc}</p>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 pt-4 border-t border-stone-100">
-                      <div className="flex flex-wrap items-baseline gap-x-2">
+                    <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+                      <div className="flex items-baseline gap-2">
                         <span className="text-xs text-stone-400 line-through font-bold">
                           {convert(card.oldPrice)}
                         </span>
-                        <span className="text-xl sm:text-2xl font-black text-stone-950">
+                        <span className="text-2xl font-black text-stone-950">
                           {convert(card.price)}
                         </span>
                       </div>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() =>
                           addToCart({
                             id: card.id,
-                            name: card.cartName,
+                            name: `${card.title} (${freq}/wk)`,
                             price: card.price,
                             quantity: 1,
                             image: card.image,
-                          });
-                        }}
-                        className="bg-stone-950 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer flex-shrink-0"
+                          })
+                        }
+                        className="bg-stone-950 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
                       >
                         Buy
                       </button>
@@ -757,16 +617,12 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          )}
-
-          {/* UNLOCKED NUTRITION CARDS */}
-          {showNutritionResults && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {nutritionCards.map((card) => (
                 <div
                   key={card.id}
-                  onClick={() => setSelectedProgram(card)}
-                  className={`group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer ${
+                  className={`group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md flex flex-col justify-between hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 ${
                     isMen ? "hover:border-blue-600/60" : "hover:border-pink-500/60"
                   }`}
                 >
@@ -785,19 +641,9 @@ export default function Home() {
                     >
                       {card.badge}
                     </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProgram(card);
-                      }}
-                      aria-label={`View details for ${card.title}`}
-                      className={`absolute bottom-4 right-4 w-10 h-10 rounded-xl text-white flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 group-hover:rotate-12 cursor-pointer ${
-                        isMen ? "bg-blue-600" : "bg-pink-500"
-                      }`}
-                    >
-                      <ArrowUpRight size={18} />
-                    </button>
+                    <span className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-stone-900 inline-flex items-center gap-1 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg">
+                      <Lock size={11} /> Vault Exclusive
+                    </span>
                   </div>
 
                   <div className="p-6 flex-1 flex flex-col justify-between">
@@ -818,27 +664,26 @@ export default function Home() {
                       <p className="text-xs text-stone-600 leading-relaxed mb-6">{card.desc}</p>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 pt-4 border-t border-stone-100">
-                      <div className="flex flex-wrap items-baseline gap-x-2">
+                    <div className="flex items-center justify-between pt-4 border-t border-stone-100">
+                      <div className="flex items-baseline gap-2">
                         <span className="text-xs text-stone-400 line-through font-bold">
                           {convert(card.oldPrice)}
                         </span>
-                        <span className="text-xl sm:text-2xl font-black text-stone-950">
+                        <span className="text-2xl font-black text-stone-950">
                           {convert(card.price)}
                         </span>
                       </div>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={() =>
                           addToCart({
                             id: card.id,
-                            name: card.cartName,
+                            name: `${card.title} (${isMen ? "Men" : "Women"})`,
                             price: card.price,
                             quantity: 1,
                             image: card.image,
-                          });
-                        }}
-                        className="bg-stone-950 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer flex-shrink-0"
+                          })
+                        }
+                        className="bg-stone-950 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
                       >
                         Buy
                       </button>
@@ -851,7 +696,7 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* 4. COMPLETE TRANSFORMATION PACKAGE (MOBILE-FRIENDLY PRICE BLOCK) */}
+      {/* 4. COMPLETE TRANSFORMATION PACKAGE (WITH NUTRITION3 VISUAL) */}
       <ScrollReveal>
         <section className="py-20 bg-stone-950 text-white relative overflow-hidden">
           <div className="absolute -left-24 bottom-0 w-72 h-72 bg-red-800/25 blur-[120px] rounded-full pointer-events-none" />
@@ -884,8 +729,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="lg:col-span-6 bg-white text-stone-950 rounded-3xl p-6 sm:p-9 shadow-2xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-4">
+            <div className="lg:col-span-6 bg-white text-stone-950 rounded-3xl p-7 sm:p-9 shadow-2xl">
+              <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-5">
                 Included in the Package
               </p>
               <div className="divide-y divide-stone-200 mb-6">
@@ -911,18 +756,15 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* CLEAN STACKED MOBILE PRICING BOX */}
-              <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">
+              <div className="flex items-end justify-between mb-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">
                   Complete Package
                 </p>
-                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                  <span className="text-xs sm:text-sm text-stone-400 line-through font-bold">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="text-sm text-stone-400 line-through font-bold">
                     {convert(43)}
                   </span>
-                  <span className="text-2xl sm:text-3xl font-black text-stone-950 leading-none">
-                    {convert(24)}
-                  </span>
+                  <span className="text-3xl font-black">{convert(24)}</span>
                 </div>
               </div>
 
@@ -946,7 +788,7 @@ export default function Home() {
         </section>
       </ScrollReveal>
 
-      {/* 5. CLIENT TRANSFORMATIONS (UN-ZOOMED + CLICKABLE FULLSCREEN LIGHTBOX) */}
+      {/* 5. CLIENT TRANSFORMATIONS (NEW IMAGES: image00001/2/3.jpeg) */}
       <ScrollReveal className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <section id="results">
           <div className="mb-12">
@@ -962,41 +804,24 @@ export default function Home() {
             {transformations.map((item) => (
               <div
                 key={item.num}
-                onClick={() => setLightboxItem(item)}
-                className="group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer"
+                className="group bg-white border border-stone-200/90 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col"
               >
-                {/* UN-ZOOMED IMAGE FRAME WITH SOFT BLURRED BACKDROP */}
-                <div className="relative h-72 sm:h-80 w-full bg-stone-950 overflow-hidden flex items-center justify-center">
-                  <Image
-                    src={item.image}
-                    alt=""
-                    fill
-                    aria-hidden
-                    className="object-cover blur-xl opacity-35 scale-110 pointer-events-none"
-                  />
+                <div className="relative aspect-[4/5] w-full bg-stone-100 overflow-hidden">
                   <Image
                     src={item.image}
                     alt={`${item.name} ${item.num}`}
                     fill
-                    className="object-contain p-2 transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
                   />
-
-                  <span className="absolute top-3 left-3 bg-red-800/95 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm z-10">
+                  <span className="absolute top-3 left-3 bg-red-800/95 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
                     {item.tag}
                   </span>
-
-                  <span className="absolute bottom-3 right-3 bg-stone-950/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15 z-10 group-hover:bg-red-800 transition-colors">
-                    <ZoomIn size={13} /> View Full
+                  <span className="absolute top-3 right-3 bg-white/95 text-stone-950 text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm">
+                    {item.num}/03
                   </span>
                 </div>
-
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-black uppercase text-base">{item.name}</h3>
-                    <span className="text-[10px] font-black text-stone-400">
-                      {item.num}/03
-                    </span>
-                  </div>
+                  <h3 className="font-black uppercase text-base mb-2">{item.name}</h3>
                   <p className="text-xs text-stone-600 leading-relaxed">
                     &ldquo;{item.quote}&rdquo;
                   </p>
@@ -1006,144 +831,6 @@ export default function Home() {
           </div>
         </section>
       </ScrollReveal>
-
-      {/* MODAL 1: PROGRAM DETAILS PREVIEW (OPENS ON CARD / ARROW CLICK) */}
-      {selectedProgram && (
-        <div
-          className="fixed inset-0 z-50 bg-stone-950/75 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setSelectedProgram(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-stone-200 max-h-[90vh] flex flex-col"
-          >
-            <button
-              onClick={() => setSelectedProgram(null)}
-              aria-label="Close details"
-              className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/95 hover:bg-red-800 text-stone-800 hover:text-white flex items-center justify-center shadow-md transition-colors cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-
-            <div className="relative h-56 w-full bg-stone-100 flex-shrink-0">
-              <Image
-                src={selectedProgram.image}
-                alt={selectedProgram.title}
-                fill
-                className="object-cover object-top"
-              />
-              <span className="absolute bottom-3 left-4 bg-stone-950/85 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg">
-                {selectedProgram.badge}
-              </span>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-red-800">
-                  {selectedProgram.sub}
-                </p>
-                <h3 className="text-2xl font-black uppercase tracking-tight mt-0.5">
-                  {selectedProgram.title}
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 bg-stone-50 border border-stone-200/80 rounded-2xl p-3.5">
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-stone-400">Goal</p>
-                  <p className="text-xs font-black text-stone-900 mt-0.5">
-                    {selectedProgram.goal}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-stone-400">Duration</p>
-                  <p className="text-xs font-black text-stone-900 mt-0.5">
-                    {selectedProgram.duration}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                {selectedProgram.desc}
-              </p>
-
-              <ul className="space-y-2 pt-1">
-                {selectedProgram.highlights.map((h) => (
-                  <li key={h} className="flex items-start gap-2 text-xs font-bold text-stone-800">
-                    <span className="w-4 h-4 rounded-full bg-red-50 text-red-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check size={11} strokeWidth={3} />
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-4 border-t border-stone-200 flex items-center justify-between gap-4">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-xs text-stone-400 line-through font-bold">
-                    {convert(selectedProgram.oldPrice)}
-                  </span>
-                  <span className="text-2xl font-black text-stone-950">
-                    {convert(selectedProgram.price)}
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    addToCart({
-                      id: selectedProgram.id,
-                      name: selectedProgram.cartName,
-                      price: selectedProgram.price,
-                      quantity: 1,
-                      image: selectedProgram.image,
-                    });
-                    setSelectedProgram(null);
-                  }}
-                  className="bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: TRANSFORMATION FULLSCREEN LIGHTBOX (NO REDIRECT) */}
-      {lightboxItem && (
-        <div
-          className="fixed inset-0 z-50 bg-stone-950/90 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setLightboxItem(null)}
-        >
-          <button
-            onClick={() => setLightboxItem(null)}
-            aria-label="Close fullscreen image"
-            className="fixed top-5 right-5 z-50 w-11 h-11 rounded-full bg-white/15 hover:bg-red-800 text-white border border-white/20 flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <X size={20} />
-          </button>
-
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-3xl w-full flex flex-col items-center gap-4"
-          >
-            <div className="relative w-full h-[72vh] rounded-2xl overflow-hidden bg-stone-950 border border-white/10">
-              <Image
-                src={lightboxItem.image}
-                alt={lightboxItem.name}
-                fill
-                className="object-contain"
-              />
-            </div>
-            <div className="text-center max-w-lg px-2">
-              <span className="inline-block bg-red-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2">
-                {lightboxItem.tag}
-              </span>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                &ldquo;{lightboxItem.quote}&rdquo;
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
