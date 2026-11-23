@@ -9,9 +9,9 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { CurrencyProvider } from "@/app/context/CurrencyContext";
 
 export const metadata: Metadata = {
-  title: "Shuki Fitness | Elite Training & Nutrition",
+  title: "Evolution Body by Andrej Angjeleski | Training & Nutrition",
   description:
-    "Structured workout programs (2x, 3x, 4x/week), Bulking & Cutting nutrition plans, and 1-on-1 online coaching.",
+    "Evolution Body by Coach Andrej Angjeleski — Structured workout programs (2x, 3x, 4x/week), Bulking & Cutting nutrition plans, and 1-on-1 online coaching.",
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className="bg-white text-zinc-950 antialiased flex flex-col min-h-screen selection:bg-red-700 selection:text-white">
+        <body className="bg-white text-zinc-950 antialiased flex flex-col min-h-screen overflow-x-clip selection:bg-red-700 selection:text-white">
           <CurrencyProvider>
             <CartProvider>
               <Navbar />

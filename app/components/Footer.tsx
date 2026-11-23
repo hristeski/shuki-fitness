@@ -6,20 +6,20 @@ import { ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-950 text-white pt-20 pb-28 lg:pb-12 border-t border-zinc-900 overflow-hidden">
+    <footer className="bg-stone-950 text-white pt-20 pb-28 lg:pb-12 border-t border-stone-900 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-14 border-b border-zinc-800/80">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-14 border-b border-stone-800/80">
           <div>
             <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter leading-none">
-              Start <span className="text-red-600">Today.</span>
+              Start <span className="text-red-700">Today.</span>
             </h2>
-            <p className="text-zinc-400 text-sm mt-2 font-medium">
-              Be the best version of yourself.
+            <p className="text-stone-400 text-sm mt-2 font-medium">
+              Evolution Body by Andrej Angjeleski — Built for lasting results.
             </p>
           </div>
           <Link
             href="/#programs"
-            className="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-full transition-all shadow-lg shadow-red-900/30 active:scale-95"
+            className="inline-flex items-center gap-2 bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-full transition-all shadow-lg shadow-red-950/40 active:scale-95"
           >
             Choose a Program
             <ArrowUpRight size={16} />
@@ -28,21 +28,24 @@ export default function Footer() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 py-14">
           <div className="col-span-2 md:col-span-1">
-            <h4 className="text-sm font-black uppercase tracking-wider text-white mb-4">
-              Shuki Fitness
+            <h4 className="text-sm font-black uppercase tracking-wider text-white mb-1">
+              Evolution Body
             </h4>
-            <p className="text-zinc-400 text-xs leading-relaxed mb-6">
-              Structured training programs, Bulking &amp; Cutting nutrition plans,
-              and 1-on-1 online coaching.
+            <p className="text-[11px] font-bold uppercase tracking-widest text-red-600 mb-4">
+              by Andrej Angjeleski
+            </p>
+            <p className="text-stone-400 text-xs leading-relaxed mb-6">
+              Structured gym &amp; home training programs, Bulking &amp; Cutting
+              nutrition plans, and 1-on-1 online coaching.
             </p>
             <CurrencySelector direction="up" />
           </div>
 
           <div>
-            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-4">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-4">
               Navigation
             </h4>
-            <ul className="space-y-3 text-sm font-medium text-zinc-300">
+            <ul className="space-y-3 text-sm font-medium text-stone-300">
               <li>
                 <Link href="/#programs" className="hover:text-red-500 transition-colors">
                   Programs
@@ -55,7 +58,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/#results" className="hover:text-red-500 transition-colors">
-                  Success Stories
+                  Transformations
                 </Link>
               </li>
               <li>
@@ -66,12 +69,34 @@ export default function Footer() {
             </ul>
           </div>
 
+          <div>
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-4">
+              Members
+            </h4>
+            <ul className="space-y-3 text-sm font-medium text-stone-300">
+              <li>
+                <Link href="/dashboard" className="hover:text-red-500 transition-colors">
+                  My Profile &amp; Vault
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard?tab=videos" className="hover:text-red-500 transition-colors">
+                  Exercise Videos
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard?tab=recipes" className="hover:text-red-500 transition-colors">
+                  Healthy Recipes
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           <div>
-            <h4 className="text-[11px] font-black uppercase tracking-widest text-zinc-500 mb-4">
-              Connect &amp; Payments
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-4">
+              Contact
             </h4>
-            <ul className="space-y-3 text-sm font-medium text-zinc-300 mb-6">
+            <ul className="space-y-3 text-sm font-medium text-stone-300">
               <li>
                 <a
                   href="https://www.instagram.com/angjeleskiandrej/"
@@ -85,30 +110,26 @@ export default function Footer() {
                   @angjeleskiandrej
                 </a>
               </li>
-              <li className="text-zinc-400 text-xs">smootyefects@gmail.com</li>
-              <li className="text-zinc-400 text-xs">Skopje, North Macedonia</li>
-            </ul>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {["VISA", "MASTERCARD", "PAYPAL", "CRYPTO"].map((method) => (
-                <span
-                  key={method}
-                  className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[9px] font-black tracking-widest text-zinc-400"
+              <li>
+                <a
+                  href="mailto:contact@evolutionbody.fit"
+                  className="text-stone-400 hover:text-white transition-colors text-xs"
                 >
-                  {method}
-                </span>
-              ))}
-            </div>
+                  contact@evolutionbody.fit
+                </a>
+              </li>
+              <li className="text-stone-500 text-xs">Skopje, North Macedonia</li>
+            </ul>
           </div>
         </div>
 
-        <div className="py-4 select-none pointer-events-none">
-          <p className="text-[13vw] lg:text-[9.5rem] font-black uppercase tracking-tighter leading-[0.82] text-red-700/90 text-center">
-            SHUKIFITNESS
+        <div className="py-4 select-none pointer-events-none text-center">
+          <p className="text-[11vw] lg:text-[8.2rem] font-black uppercase tracking-tighter leading-[0.85] text-red-800/90">
+            EVOLUTION BODY
           </p>
         </div>
 
-        <div className="pt-8 mt-6 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500 font-medium">
+        <div className="pt-8 mt-6 border-t border-stone-900 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 font-medium">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2">
             <Link href="/contact" className="hover:text-white transition-colors">
               Privacy Policy
@@ -123,7 +144,9 @@ export default function Footer() {
               Cookie Policy
             </Link>
           </div>
-          <p>© {new Date().getFullYear()} Shuki Fitness. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Evolution Body by Andrej Angjeleski. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

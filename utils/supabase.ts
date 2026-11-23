@@ -1,6 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabaseUrl = rawUrl.startsWith("http")
+  ? rawUrl
+  : "https://placeholder.supabase.co";
+
+const supabaseAnonKey =
+  rawKey && rawKey !== "[SENSITIVE]" ? rawKey : "placeholder-anon-key";
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
