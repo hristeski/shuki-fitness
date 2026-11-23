@@ -12,6 +12,9 @@ import {
   Minus,
   Lock,
   Sparkles,
+  Flame,
+  Dumbbell,
+  Trophy,
 } from "lucide-react";
 
 const FAQ_ITEMS = [
@@ -52,61 +55,119 @@ export default function Home() {
 
   return (
     <main className="flex flex-col min-h-screen bg-white text-zinc-950 pb-20 lg:pb-0">
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden border-b border-zinc-100 bg-zinc-50/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7 space-y-6">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.92]">
-              Transform <br />
-              <span className="text-red-700">Your Body</span>
-            </h1>
+      {/* 1. IMMERSIVE HERO (ANATOLY-STYLE FULL IMAGE ON MOBILE + MOVING OBJECTS) */}
+      <section className="relative bg-zinc-950 text-white overflow-hidden">
+        {/* Ambient Crimson Glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] bg-red-700/30 blur-[120px] rounded-full pointer-events-none" />
 
-            <p className="text-zinc-600 text-base sm:text-lg max-w-lg leading-relaxed font-medium">
-              Training and nutrition with a clear goal. Your new beginning is
-              now.
+        {/* MOBILE FULL-WIDTH TOP IMAGE (Uncropped Portrait Blending Into Content) */}
+        <div className="lg:hidden relative w-full h-[58vh] min-h-[420px]">
+          <Image
+            src="/images/coach.jpg"
+            alt="Coach Andrej"
+            fill
+            priority
+            className="object-cover object-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/35 to-transparent" />
+
+          {/* Moving Floating Pill 1 */}
+          <div className="animate-float-1 absolute top-5 left-4 bg-zinc-950/75 backdrop-blur-md border border-white/15 px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-xl">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-white">
+              Men &amp; Women Plans
+            </span>
+          </div>
+
+          {/* Moving Floating Pill 2 */}
+          <div className="animate-float-2 absolute top-16 right-4 bg-white/95 backdrop-blur-md text-zinc-950 px-3.5 py-2 rounded-2xl flex items-center gap-1.5 shadow-xl">
+            <Trophy size={13} className="text-red-700" />
+            <span className="text-[10px] font-black uppercase tracking-wider">
+              500+ Results
+            </span>
+          </div>
+
+          {/* Coach Name Over Gradient */}
+          <div className="absolute bottom-4 left-4 right-4 text-center">
+            <span className="inline-block px-3 py-1 rounded-md bg-red-700 text-white text-[10px] font-black uppercase tracking-widest mb-2">
+              Andrej Angjeleski • Shuki
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tighter leading-[0.95]">
+              Transform <span className="text-red-500">Your Body.</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* HERO CONTENT CONTAINER */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-3 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+          {/* LEFT / MOBILE BOTTOM */}
+          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            {/* Desktop-only Headline */}
+            <div className="hidden lg:block space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-700/20 border border-red-600/40 text-red-400 text-[11px] font-black uppercase tracking-widest">
+                <Flame size={13} /> Andrej Angjeleski • Shuki Fitness
+              </div>
+              <h1 className="text-6xl xl:text-7xl font-black uppercase tracking-tighter leading-[0.92]">
+                Transform <br />
+                <span className="text-red-500">Your Body.</span>
+              </h1>
+            </div>
+
+            <p className="text-zinc-300 text-sm sm:text-base lg:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              Training and nutrition with a clear goal. Pick 2x, 3x, or 4x
+              weekly splits and unlock your complete Member Vault.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+            {/* ANATOLY-STYLE GLOWING PROMO TICKET CARD */}
+            <div className="animate-ticket-glow max-w-md mx-auto lg:mx-0 bg-zinc-900/95 border border-red-600/60 rounded-2xl p-4 flex items-center justify-between text-left relative overflow-hidden">
+              <div className="pr-4 border-r border-dashed border-zinc-700">
+                <p className="text-2xl sm:text-3xl font-black text-red-500 leading-none">
+                  30% OFF
+                </p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mt-1">
+                  Limited Offer
+                </p>
+              </div>
+              <div className="pl-4 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-400">
+                  All Training &amp; Nutrition Plans
+                </p>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-xs text-zinc-500 line-through font-bold">
+                    {convert(22)}
+                  </span>
+                  <span className="text-2xl font-black text-white">
+                    {convert(15)}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-bold">
+                    / one-time
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* PRIMARY CTAS */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto lg:mx-0 pt-1">
               <a
                 href="#programs"
-                className="inline-flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-8 py-4 rounded-xl transition-all shadow-lg shadow-red-700/20 active:scale-95"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-red-700 hover:bg-red-600 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-2xl transition-all shadow-lg shadow-red-700/30 active:scale-95"
               >
                 Choose a Program
                 <ArrowRight size={16} />
               </a>
               <Link
                 href="/coaching"
-                className="inline-flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white font-black uppercase tracking-wider text-xs px-8 py-4 rounded-xl transition-all active:scale-95"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white hover:text-zinc-950 border border-white/15 text-white font-black uppercase tracking-wider text-xs px-6 py-4 rounded-2xl transition-all active:scale-95"
               >
                 <Sparkles size={15} />
                 Online Coaching
               </Link>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-zinc-200 max-w-md">
-              <div>
-                <p className="text-2xl sm:text-3xl font-black text-red-700">500+</p>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                  Success Stories
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-black text-zinc-950">10+</p>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                  Years Coaching
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-black text-zinc-950">2x-4x</p>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                  Weekly Splits
-                </p>
-              </div>
-            </div>
           </div>
 
-          <div className="lg:col-span-5">
-            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-zinc-200 shadow-2xl group">
+          {/* DESKTOP PORTRAIT WITH MOVING OBJECTS */}
+          <div className="hidden lg:block lg:col-span-5 relative">
+            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl group">
               <Image
                 src="/images/coach.jpg"
                 alt="Coach Andrej"
@@ -115,7 +176,24 @@ export default function Home() {
                 className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5">
+
+              {/* Moving Floating Badge 1 */}
+              <div className="animate-float-1 absolute top-5 left-5 bg-zinc-950/80 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl flex items-center gap-2 shadow-xl">
+                <Dumbbell size={15} className="text-red-500" />
+                <span className="text-[11px] font-black uppercase tracking-wider text-white">
+                  2x • 3x • 4x Splits
+                </span>
+              </div>
+
+              {/* Moving Floating Badge 2 */}
+              <div className="animate-float-2 absolute bottom-20 right-5 bg-white/95 backdrop-blur-md text-zinc-950 px-4 py-2.5 rounded-2xl flex items-center gap-2 shadow-xl">
+                <Trophy size={15} className="text-red-700" />
+                <span className="text-[11px] font-black uppercase tracking-wider">
+                  500+ Transformations
+                </span>
+              </div>
+
+              <div className="absolute bottom-5 left-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-zinc-300">
                   Andrej Angjeleski
                 </p>
@@ -129,7 +207,7 @@ export default function Home() {
       </section>
 
       {/* 2. TRAIN TOGETHER — STRONGER TOGETHER */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <section className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="bg-zinc-950 text-white rounded-3xl p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative overflow-hidden">
           <div className="absolute -right-24 -top-24 w-72 h-72 bg-red-700/20 blur-[100px] rounded-full pointer-events-none" />
 
@@ -198,9 +276,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. PROGRAMS & NUTRITION (MEN / WOMEN + BEGINNER / ADVANCED + 2x/3x/4x) */}
-      <section id="programs" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+      {/* 3. PROGRAMS & NUTRITION (CLEAN 3-STEP LOGICAL MOBILE CONTROLS) */}
+      <section id="programs" className="py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.92]">
             Success Starts <br />
             With a <span className="text-red-700">Decision</span>
@@ -211,75 +289,91 @@ export default function Home() {
           </p>
         </div>
 
-        {/* FILTER CONTROLS: MEN/WOMEN + TRAINING/NUTRITION + FREQUENCY */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-8 mb-8 border-b border-zinc-200">
-          {/* FOR MEN / FOR WOMEN */}
-          <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
-            <button
-              onClick={() => setGenderTab("men")}
-              className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                genderTab === "men"
-                  ? "bg-red-700 text-white shadow-sm"
-                  : "text-zinc-600 hover:text-zinc-950"
-              }`}
-            >
-              For Men
-            </button>
-            <button
-              onClick={() => setGenderTab("women")}
-              className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                genderTab === "women"
-                  ? "bg-red-700 text-white shadow-sm"
-                  : "text-zinc-600 hover:text-zinc-950"
-              }`}
-            >
-              For Women
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {/* TRAINING / NUTRITION */}
-            <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
-              <button
-                onClick={() => setCategoryTab("training")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  categoryTab === "training"
-                    ? "bg-zinc-950 text-white"
-                    : "text-zinc-600 hover:text-zinc-950"
-                }`}
-              >
-                Training
-              </button>
-              <button
-                onClick={() => setCategoryTab("nutrition")}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  categoryTab === "nutrition"
-                    ? "bg-zinc-950 text-white"
-                    : "text-zinc-600 hover:text-zinc-950"
-                }`}
-              >
-                Nutrition
-              </button>
+        {/* LOGICAL 3-STEP FILTER BAR (STACKED CLEANLY ON MOBILE) */}
+        <div className="bg-zinc-50 border border-zinc-200/90 rounded-3xl p-4 sm:p-5 mb-10 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* STEP 1: GENDER (FULL WIDTH 2-COLUMN SEGMENTED CONTROL) */}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1.5 px-1">
+                1. Select Category
+              </p>
+              <div className="grid grid-cols-2 p-1 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+                <button
+                  onClick={() => setGenderTab("men")}
+                  className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    genderTab === "men"
+                      ? "bg-red-700 text-white shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-950"
+                  }`}
+                >
+                  For Men
+                </button>
+                <button
+                  onClick={() => setGenderTab("women")}
+                  className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    genderTab === "women"
+                      ? "bg-red-700 text-white shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-950"
+                  }`}
+                >
+                  For Women
+                </button>
+              </div>
             </div>
 
-            {categoryTab === "training" && (
-              <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
+            {/* STEP 2: PLAN TYPE (FULL WIDTH 2-COLUMN SEGMENTED CONTROL) */}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1.5 px-1">
+                2. Select Focus
+              </p>
+              <div className="grid grid-cols-2 p-1 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+                <button
+                  onClick={() => setCategoryTab("training")}
+                  className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    categoryTab === "training"
+                      ? "bg-zinc-950 text-white shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-950"
+                  }`}
+                >
+                  Training
+                </button>
+                <button
+                  onClick={() => setCategoryTab("nutrition")}
+                  className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                    categoryTab === "nutrition"
+                      ? "bg-zinc-950 text-white shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-950"
+                  }`}
+                >
+                  Nutrition
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* STEP 3: WEEKLY FREQUENCY (FULL WIDTH 3-COLUMN SEGMENTED CONTROL) */}
+          {categoryTab === "training" && (
+            <div className="pt-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1.5 px-1">
+                3. Workouts Per Week
+              </p>
+              <div className="grid grid-cols-3 p-1 bg-white rounded-2xl border border-zinc-200 shadow-sm">
                 {(["2x", "3x", "4x"] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFreq(f)}
-                    className={`px-3 py-2 rounded-lg text-xs font-black uppercase transition-all cursor-pointer ${
+                    className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                       freq === f
-                        ? "bg-red-700 text-white"
+                        ? "bg-red-700 text-white shadow-sm"
                         : "text-zinc-600 hover:text-zinc-950"
                     }`}
                   >
-                    {f}/wk
+                    {f} / Week
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* CARDS GRID */}
@@ -394,7 +488,7 @@ export default function Home() {
                           image: card.image,
                         })
                       }
-                      className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                      className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
                     >
                       Buy
                     </button>
@@ -487,7 +581,7 @@ export default function Home() {
                         image: card.image,
                       })
                     }
-                    className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                    className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
                   >
                     Buy
                   </button>
@@ -498,7 +592,7 @@ export default function Home() {
         )}
       </section>
 
-      {/* 4. COMPLETE TRANSFORMATION BUNDLE */}
+      {/* 4. COMPLETE TRANSFORMATION PACKAGE */}
       <section className="py-20 bg-zinc-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 space-y-4">
@@ -532,7 +626,9 @@ export default function Home() {
               <div className="py-3.5 flex items-start gap-4">
                 <span className="text-xs font-black text-red-700 mt-0.5">02</span>
                 <div>
-                  <h4 className="font-black uppercase text-sm">Nutrition Plan + Vault Access</h4>
+                  <h4 className="font-black uppercase text-sm">
+                    Nutrition Plan + Vault Access
+                  </h4>
                   <p className="text-xs text-zinc-500">
                     Bulking or Cutting + Exercise Videos &amp; Healthy Recipes
                   </p>
@@ -617,8 +713,16 @@ export default function Home() {
               className="bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden flex flex-col"
             >
               <div className="relative h-56 flex">
-                <img src={story.before} alt="Before" className="w-1/2 h-full object-cover border-r border-white" />
-                <img src={story.after} alt="After" className="w-1/2 h-full object-cover" />
+                <img
+                  src={story.before}
+                  alt="Before"
+                  className="w-1/2 h-full object-cover border-r border-white"
+                />
+                <img
+                  src={story.after}
+                  alt="After"
+                  className="w-1/2 h-full object-cover"
+                />
                 <span className="absolute top-3 right-3 bg-white/95 text-zinc-950 text-[10px] font-black px-2.5 py-1 rounded-full">
                   {story.num}
                 </span>

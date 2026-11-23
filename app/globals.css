@@ -8,7 +8,7 @@
   }
 
   body {
-    background-color: #fafafa;
+    background-color: #ffffff;
     color: #0a0a0a;
     overflow-x: hidden;
   }
@@ -25,46 +25,48 @@
   border-radius: 9999px;
   border: 2px solid #f4f4f5;
 }
-
-/* Subtle Architectural Dot Grid */
-.bg-dot-grid {
-  background-image: radial-gradient(#d4d4d8 1px, transparent 1px);
-  background-size: 24px 24px;
+::-webkit-scrollbar-thumb:hover {
+  background-color: #991b1b;
 }
 
-/* Shimmer Sweep Effect on Primary Buttons */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-120%) skewX(-18deg);
+/* Moving Floating Objects */
+@keyframes floatOne {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
   }
-  100% {
-    transform: translateX(220%) skewX(-18deg);
+  50% {
+    transform: translateY(-8px) translateX(4px);
   }
 }
-.btn-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-.btn-shimmer::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 45%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.28),
-    transparent
-  );
-  transform: translateX(-120%) skewX(-18deg);
-}
-.btn-shimmer:hover::after {
-  animation: shimmer 0.75s ease-out;
+
+@keyframes floatTwo {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(7px) translateX(-5px);
+  }
 }
 
-/* Smooth Marquee */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(185, 28, 28, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 38px rgba(220, 38, 38, 0.65);
+  }
+}
+
+.animate-float-1 {
+  animation: floatOne 4.5s ease-in-out infinite;
+}
+.animate-float-2 {
+  animation: floatTwo 5.2s ease-in-out infinite;
+}
+.animate-ticket-glow {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
 @keyframes scroll {
   0% {
     transform: translateX(0);
@@ -74,8 +76,5 @@
   }
 }
 .animate-scroll {
-  animation: scroll 24s linear infinite;
-}
-.animate-scroll:hover {
-  animation-play-state: paused;
+  animation: scroll 22s linear infinite;
 }
