@@ -1,401 +1,681 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import DiscountBadge from "./DiscountBadge";
-import InstagramPopup from "./components/InstagramPopup";
+import { useCart } from "./context/CartContext";
+import { useCurrency } from "./context/CurrencyContext";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Plus,
+  Minus,
+  Lock,
+  Sparkles,
+} from "lucide-react";
+
+const FAQ_ITEMS = [
+  {
+    q: "Does faster weight loss mean better results?",
+    a: "No. Rapid weight loss often causes muscle loss and rebound weight gain. A controlled, structured deficit delivers lasting results.",
+  },
+  {
+    q: "I train and eat healthy, but I'm not losing weight — why?",
+    a: "Portion sizes and hidden calories add up quickly. A structured nutrition plan removes guesswork and ensures consistent progress.",
+  },
+  {
+    q: "Is the order of exercises in a workout important?",
+    a: "Yes. Starting with compound movements while your energy is highest maximizes strength and hypertrophy.",
+  },
+  {
+    q: "Can you build muscle with lighter weights?",
+    a: "Yes, when paired with proper form, controlled tempo, and training close to muscular failure.",
+  },
+  {
+    q: "What is a calorie deficit and why does it matter?",
+    a: "Consuming fewer calories than your body burns is required for fat loss. Pairing it with high protein protects your muscle mass.",
+  },
+  {
+    q: "How do I access my Exercise Videos and Recipes?",
+    a: "Once your program is purchased and approved, your personal Member Vault automatically unlocks your PDF plans, Exercise Video Library, and High-Protein Recipes.",
+  },
+];
 
 export default function Home() {
+  const { addToCart } = useCart();
+  const { convert } = useCurrency();
+
+  const [genderTab, setGenderTab] = useState<"men" | "women">("men");
+  const [categoryTab, setCategoryTab] = useState<"training" | "nutrition">("training");
+  const [freq, setFreq] = useState<"2x" | "3x" | "4x">("3x");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   return (
-    <main className="flex flex-col min-h-screen bg-black">
-      <InstagramPopup />
-
-      <DiscountBadge />
-
+    <main className="flex flex-col min-h-screen bg-white text-zinc-950 pb-20 lg:pb-0">
       {/* 1. HERO SECTION */}
-      <section className="relative h-[85vh] md:h-[90vh] flex flex-col justify-end md:justify-center px-4 sm:px-8 md:px-16 pb-12 md:pb-0 overflow-hidden border-b border-zinc-900">
-        <div className="absolute inset-0 z-0 bg-black">
-           <Image 
-             src="/images/coach.jpg" 
-             alt="Coach Shuki" 
-             fill 
-             className="object-cover object-top md:object-center" 
-             priority
-           />
-           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent md:bg-gradient-to-b md:from-black/30 md:via-transparent md:to-black/90"></div>
-        </div>
-        
-        <div className="relative z-10 text-center w-full max-w-5xl mx-auto md:mt-20 px-2">
-          <h1 className="text-[3.2rem] leading-[0.9] sm:text-6xl md:text-[7rem] lg:text-[8rem] font-black uppercase tracking-tighter text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)]">
-            Start <span className="text-red-600">Now</span>
-          </h1>
-          <p className="mt-4 md:mt-6 text-sm md:text-xl text-zinc-300 font-bold tracking-widest uppercase drop-shadow-lg">
-            Elite Online Coaching. Real Results.
-          </p>
+      <section className="relative overflow-hidden border-b border-zinc-100 bg-zinc-50/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-7 space-y-6">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.92]">
+              Transform <br />
+              <span className="text-red-700">Your Body</span>
+            </h1>
+
+            <p className="text-zinc-600 text-base sm:text-lg max-w-lg leading-relaxed font-medium">
+              Training and nutrition with a clear goal. Your new beginning is
+              now.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <a
+                href="#programs"
+                className="inline-flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-8 py-4 rounded-xl transition-all shadow-lg shadow-red-700/20 active:scale-95"
+              >
+                Choose a Program
+                <ArrowRight size={16} />
+              </a>
+              <Link
+                href="/coaching"
+                className="inline-flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white font-black uppercase tracking-wider text-xs px-8 py-4 rounded-xl transition-all active:scale-95"
+              >
+                <Sparkles size={15} />
+                Online Coaching
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-zinc-200 max-w-md">
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-red-700">500+</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                  Success Stories
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-zinc-950">10+</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                  Years Coaching
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-black text-zinc-950">2x-4x</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                  Weekly Splits
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5">
+            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-zinc-200 shadow-2xl group">
+              <Image
+                src="/images/coach.jpg"
+                alt="Coach Andrej"
+                fill
+                priority
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5">
+                <p className="text-xs font-bold uppercase tracking-widest text-zinc-300">
+                  Andrej Angjeleski
+                </p>
+                <p className="text-3xl font-black uppercase tracking-tighter text-red-500 leading-none">
+                  SHUKI
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 2. ABOUT / EXPERIENCE SECTION */}
-      <section className="py-16 md:py-24 px-4 sm:px-8 md:px-16 bg-black border-b border-zinc-900/50">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
-          <div className="order-1 md:order-2 text-center md:text-left">
-            <h4 className="text-red-600 font-bold tracking-widest uppercase mb-2 text-sm md:text-base">10 Years of Elite Experience</h4>
-            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight mb-6 md:mb-8 text-white">
-              Results Don't Lie.
+      {/* 2. TRAIN TOGETHER — STRONGER TOGETHER */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="bg-zinc-950 text-white rounded-3xl p-6 sm:p-10 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative overflow-hidden">
+          <div className="absolute -right-24 -top-24 w-72 h-72 bg-red-700/20 blur-[100px] rounded-full pointer-events-none" />
+
+          <div className="lg:col-span-7 space-y-5 relative z-10">
+            <span className="inline-block px-3 py-1 rounded-md bg-red-700 text-white text-[10px] font-black uppercase tracking-widest">
+              Partner Transformation
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter leading-none">
+              Train Together — <br />
+              <span className="text-red-500">Stronger Together</span>
             </h2>
-            
-            <p className="text-zinc-400 text-base md:text-xl mb-4 md:mb-6">
-              With over 10 years of hands-on experience in fitness and body transformation, I've helped hundreds of people build the physique they always wanted — from complete beginners to seasoned athletes.
+
+            <div className="grid grid-cols-2 gap-4 max-w-md pt-1">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  Goal
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-zinc-200 mt-0.5">
+                  Joint transformation &amp; healthy habits
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  Duration
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-zinc-200 mt-0.5">
+                  8 Weeks
+                </p>
+              </div>
+            </div>
+
+            <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed max-w-xl">
+              Build your bodies side by side for 8 weeks. Includes full Member
+              Vault access to workouts, nutrition, exercise videos, and recipes
+              for two.
             </p>
-            <p className="text-zinc-400 text-base md:text-xl mb-8 md:mb-10">
-              My approach is simple: no gimmicks, no shortcuts. Just proven training methods, relentless discipline, and a program tailored to push your body to its absolute limit — and beyond.
-            </p>
-            
-            <p className="hidden md:block font-black uppercase text-xl text-white mb-10 border-l-4 border-red-600 pl-4 py-1 tracking-wider">
-              YOUR TRANSFORMATION STARTS HERE.
-            </p>
-            
-            <Link href="/beginner-program" className="inline-block w-full md:w-auto bg-white text-black font-black uppercase tracking-wider px-10 py-4 md:py-5 hover:bg-red-600 hover:text-white transition-colors">
-              Start Your Journey
-            </Link>
           </div>
-          
-          <div className="order-2 md:order-2 relative aspect-[4/5] w-full max-w-sm mx-auto md:max-w-full shadow-2xl bg-zinc-900 border border-zinc-800">
-            <Image 
-              src="/images/IMG_7392.jpg" 
-              alt="Coach Shuki" 
-              fill 
-              className="object-cover" 
-            />
-            <div className="hidden md:block absolute inset-0 border-4 border-zinc-800 -translate-x-4 -translate-y-4 -z-10"></div>
+
+          <div className="lg:col-span-5 bg-white text-zinc-950 rounded-2xl p-6 sm:p-8 relative z-10 shadow-xl">
+            <p className="text-[10px] font-black uppercase tracking-widest text-red-700 mb-2">
+              Duo Package (2 People)
+            </p>
+            <div className="flex items-baseline gap-3 mb-6">
+              <span className="text-sm text-zinc-400 line-through font-bold">
+                {convert(85)}
+              </span>
+              <span className="text-4xl font-black text-zinc-950">
+                {convert(15)}
+              </span>
+            </div>
+            <button
+              onClick={() =>
+                addToCart({
+                  id: "stronger-together-duo",
+                  name: "Stronger Together — Duo Plan (8 Weeks)",
+                  price: 15,
+                  quantity: 1,
+                  image: "/images/IMG_7392.jpg",
+                })
+              }
+              className="w-full bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all active:scale-95 cursor-pointer"
+            >
+              Start Together
+            </button>
           </div>
         </div>
       </section>
 
-      {/* SCROLLING BANNER */}
-      <div className="relative bg-gradient-to-r from-black via-zinc-900 to-black text-white font-black uppercase tracking-[0.25em] text-[10px] md:text-xs py-4 overflow-hidden flex whitespace-nowrap border-y border-zinc-800 shadow-[0_0_30px_rgba(0,0,0,0.8)] z-10 group">
-        <div className="absolute inset-0 bg-red-600/5 blur-xl pointer-events-none transition-opacity duration-700 group-hover:opacity-100 opacity-50"></div>
-        <div className="animate-scroll flex gap-8 items-center">
-          <div className="flex gap-8 items-center drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
-            <span>⚡ NO EXCUSES, ONLY RESULTS</span>
-            <span className="text-red-600">///</span>
-            <span>TAKE THE FIRST STEP TODAY</span>
-            <span className="text-red-600">///</span>
-            <span className="text-red-500">🔥 CLAIM YOUR 10% DISCOUNT</span>
-            <span className="text-red-600">///</span>
-            <span>BUILD THE BODY YOU DESERVE</span>
-            <span className="text-red-600">///</span>
-          </div>
-          <div className="flex gap-8 items-center drop-shadow-[0_0_8px_rgba(220,38,38,0.5)]">
-            <span>⚡ NO EXCUSES, ONLY RESULTS</span>
-            <span className="text-red-600">///</span>
-            <span>TAKE THE FIRST STEP TODAY</span>
-            <span className="text-red-600">///</span>
-            <span className="text-red-500">🔥 CLAIM YOUR 10% DISCOUNT</span>
-            <span className="text-red-600">///</span>
-            <span>BUILD THE BODY YOU DESERVE</span>
-            <span className="text-red-600">///</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. SELECT YOUR PATH */}
-      <section className="py-16 md:py-24 px-4 sm:px-8 md:px-16 bg-zinc-950 border-b border-zinc-900">
-        <div className="max-w-7xl mx-auto text-center mb-12 md:mb-20">
-          <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-white mb-4 md:mb-6">
-            SELECT YOUR <span className="text-red-600 italic">PATH</span>
+      {/* 3. PROGRAMS & NUTRITION (MEN / WOMEN + BEGINNER / ADVANCED + 2x/3x/4x) */}
+      <section id="programs" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.92]">
+            Success Starts <br />
+            With a <span className="text-red-700">Decision</span>
           </h2>
-          <p className="text-sm md:text-2xl font-bold uppercase tracking-widest text-zinc-400">
-            Programs built to destroy your limits.
+          <p className="text-xs sm:text-sm text-zinc-500 max-w-xs font-medium">
+            From your first workout to the next level. Full plans, exercise
+            videos, and recipes unlock in your Vault after purchase.
           </p>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
-          <div className="bg-black p-8 md:p-10 border border-zinc-800 hover:border-red-600 transition-colors duration-300 rounded-2xl md:rounded-3xl flex flex-col justify-between">
-            <div>
-              <h4 className="text-red-600 font-bold uppercase tracking-widest text-xs md:text-sm mb-2">Foundation Tier</h4>
-              <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-8">Beginner Program</h3>
-              <ul className="space-y-4 mb-10">
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> 8-Week Structured Blueprint
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> 5 Training Days Per Week
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> Intense Single-Muscle Focus
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> Master Form & Build Foundation
-                </li>
-              </ul>
-            </div>
-            <Link href="/beginner-program" className="text-center w-full inline-block bg-white text-black font-black uppercase tracking-wider px-8 py-4 md:py-5 hover:bg-red-700 hover:text-white transition-colors">
-              Start Your Journey
-            </Link>
+        {/* FILTER CONTROLS: MEN/WOMEN + TRAINING/NUTRITION + FREQUENCY */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-8 mb-8 border-b border-zinc-200">
+          {/* FOR MEN / FOR WOMEN */}
+          <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
+            <button
+              onClick={() => setGenderTab("men")}
+              className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                genderTab === "men"
+                  ? "bg-red-700 text-white shadow-sm"
+                  : "text-zinc-600 hover:text-zinc-950"
+              }`}
+            >
+              For Men
+            </button>
+            <button
+              onClick={() => setGenderTab("women")}
+              className={`px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                genderTab === "women"
+                  ? "bg-red-700 text-white shadow-sm"
+                  : "text-zinc-600 hover:text-zinc-950"
+              }`}
+            >
+              For Women
+            </button>
           </div>
 
-          <div className="bg-black p-8 md:p-10 border border-zinc-800 hover:border-red-600 transition-colors duration-300 rounded-2xl md:rounded-3xl flex flex-col justify-between">
-            <div>
-              <h4 className="text-red-600 font-bold uppercase tracking-widest text-xs md:text-sm mb-2">Elite Tier</h4>
-              <h3 className="text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-8">Advanced Program</h3>
-              <ul className="space-y-4 mb-10">
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> 16-Week Advanced Protocol
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> 6-Day High-Frequency Split
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> Dual-Muscle Group Targeting
-                </li>
-                <li className="flex items-start gap-3 text-zinc-300 font-bold uppercase text-sm md:text-base">
-                  <span className="text-red-600 text-xl leading-none">✓</span> Push Beyond Your Limits
-                </li>
-              </ul>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* TRAINING / NUTRITION */}
+            <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
+              <button
+                onClick={() => setCategoryTab("training")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  categoryTab === "training"
+                    ? "bg-zinc-950 text-white"
+                    : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Training
+              </button>
+              <button
+                onClick={() => setCategoryTab("nutrition")}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  categoryTab === "nutrition"
+                    ? "bg-zinc-950 text-white"
+                    : "text-zinc-600 hover:text-zinc-950"
+                }`}
+              >
+                Nutrition
+              </button>
             </div>
-            <Link href="/advanced-program" className="text-center w-full inline-block bg-zinc-900 border border-zinc-700 text-white font-black uppercase tracking-wider px-8 py-4 md:py-5 hover:bg-red-700 hover:border-red-700 transition-colors">
-              Level Up Now
-            </Link>
+
+            {categoryTab === "training" && (
+              <div className="inline-flex p-1 bg-zinc-100 rounded-xl border border-zinc-200">
+                {(["2x", "3x", "4x"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFreq(f)}
+                    className={`px-3 py-2 rounded-lg text-xs font-black uppercase transition-all cursor-pointer ${
+                      freq === f
+                        ? "bg-red-700 text-white"
+                        : "text-zinc-600 hover:text-zinc-950"
+                    }`}
+                  >
+                    {f}/wk
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </section>
-<div className="flex flex-row items-center justify-center gap-3 md:gap-5 mt-8 md:mt-12 bg-zinc-950/80 backdrop-blur-md border border-zinc-800/60 hover:border-zinc-700 transition-colors py-2.5 px-4 md:py-3 md:px-7 rounded-full w-fit mx-auto shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative overflow-hidden group">
-  
-  {/* Суптилен сјај во позадина (премиум ефект) */}
-  <div className="absolute inset-0 bg-gradient-to-r from-red-600/0 via-red-600/5 to-red-600/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-  {/* Аватари кои се преклопуваат */}
-  <div className="flex -space-x-2 md:-space-x-3 relative z-10">
-    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-zinc-950 bg-zinc-900 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative z-">
-      <img src="/images/client1.jpg" alt="Client" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-    </div>
-    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-zinc-950 bg-zinc-900 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative z-">
-      <img src="/images/client2.jpg" alt="Client" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-    </div>
-    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-zinc-950 bg-zinc-900 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm relative z-">
-      <img src="/images/client3.jpg" alt="Client" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-    </div>
-    {/* Бројката +500 */}
-    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-zinc-950 bg-red-600 flex items-center justify-center text-[9px] md:text-[10px] font-black text-white shadow-[0_0_15px_rgba(220,38,38,0.4)] flex-shrink-0 relative z-">
-      500+
-    </div>
-  </div>
+        {/* CARDS GRID */}
+        {categoryTab === "training" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                id: `${genderTab}-beginner-${freq}`,
+                badge: `For ${genderTab === "men" ? "Men" : "Women"} • Beginner`,
+                sub: `TRAINING / ${freq.toUpperCase()} PER WEEK`,
+                title:
+                  genderTab === "men"
+                    ? "BEGINNER PLAN"
+                    : "WOMEN'S BEGINNER PLAN",
+                goal:
+                  genderTab === "men"
+                    ? "Foundation & Fat Loss"
+                    : "Toning, Glutes & Conditioning",
+                duration: "8-Week Program",
+                desc: "Build proper form, boost daily energy, and create visible transformation with a structured routine.",
+                oldPrice: 22,
+                price: 15,
+                image: "/images/beginner.jpg",
+              },
+              {
+                id: `${genderTab}-advanced-${freq}`,
+                badge: `For ${genderTab === "men" ? "Men" : "Women"} • Advanced`,
+                sub: `TRAINING / ${freq.toUpperCase()} PER WEEK`,
+                title:
+                  genderTab === "men"
+                    ? "ADVANCED PLAN"
+                    : "WOMEN'S ADVANCED PLAN",
+                goal:
+                  genderTab === "men"
+                    ? "Muscle Domination"
+                    : "Sculpted Physique & Strength",
+                duration: "8-Week Program",
+                desc: "Designed for experienced lifters ready for higher volume, progressive overload, and peak aesthetics.",
+                oldPrice: 22,
+                price: 15,
+                image: "/images/advanced.jpg",
+              },
+            ].map((card) => (
+              <div
+                key={card.id}
+                className="group bg-white border border-zinc-200 rounded-3xl overflow-hidden hover:border-red-700/50 hover:shadow-xl transition-all flex flex-col"
+              >
+                <div className="relative h-72 w-full bg-zinc-100 overflow-hidden">
+                  <Image
+                    src={card.image}
+                    alt={card.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <span className="absolute top-4 left-4 bg-white/95 text-zinc-950 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-md shadow-sm">
+                    {card.badge}
+                  </span>
+                  <div className="absolute bottom-4 right-4 w-10 h-10 rounded-lg bg-red-700 text-white flex items-center justify-center shadow-md">
+                    <ArrowUpRight size={18} />
+                  </div>
+                </div>
 
-  {/* Вертикална линија за раздвојување (Десктоп само) */}
-  <div className="w-px h-6 bg-zinc-800 hidden sm:block relative z-10"></div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+                      {card.sub}
+                    </p>
+                    <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
+                      {card.title} ({freq}/wk)
+                    </h3>
 
-  {/* Ѕвезди и Текст */}
-  <div className="flex flex-col items-start justify-center relative z-10">
-    <div className="flex gap-0.5 md:gap-1 text-yellow-500 mb-0.5">
-      {[1, 2, 3, 4, 5].map((star: number) => (
-        <svg key={star} className="w-3.5 h-3.5 md:w-4 md:h-4 fill-current drop-shadow-[0_0_3px_rgba(234,179,8,0.4)]" viewBox="0 0 24 24">
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-      ))}
-    </div>
-    <span className="text-zinc-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-none mt-0.5">
-      Athletes <span className="text-white">Joined</span>
-    </span>
-  </div>
-</div>
-      {/* 4. CLIENT TRANSFORMATIONS
-      <section className="py-16 md:py-24 px-4 sm:px-8 md:px-16 bg-black border-b border-zinc-900">
-        <div className="max-w-7xl mx-auto">
-          
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-2 md:mb-4">
-              Client <span className="text-red-600">Transformations</span>
-            </h2>
-            <p className="text-sm md:text-xl font-bold uppercase tracking-widest text-zinc-400">
-              Proof is in the progress.
-            </p>
-          </div>
+                    <div className="grid grid-cols-2 gap-4 py-3 border-y border-zinc-100 mb-4">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-zinc-400">
+                          Goal
+                        </p>
+                        <p className="text-xs font-bold text-zinc-900 mt-0.5">
+                          {card.goal}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase text-zinc-400">
+                          Duration
+                        </p>
+                        <p className="text-xs font-bold text-zinc-900 mt-0.5">
+                          {card.duration}
+                        </p>
+                      </div>
+                    </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className="relative aspect-[4/5] bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden group">
-                <Image 
-                  src={`/images/client${num}.jpg`} 
-                  alt={`Client Transformation ${num}`} 
-                  fill 
-                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105" 
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-zinc-800 text-xs text-center -z-10 bg-zinc-950">client{num}.jpg</div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <div className="text-white text-[10px] md:text-xs font-bold uppercase tracking-widest">Transformation {num}</div>
+                    <p className="text-xs text-zinc-600 leading-relaxed mb-6">
+                      {card.desc}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs text-zinc-400 line-through font-bold">
+                        {convert(card.oldPrice)}
+                      </span>
+                      <span className="text-2xl font-black text-zinc-950">
+                        {convert(card.price)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        addToCart({
+                          id: card.id,
+                          name: `${card.title} (${freq}/wk)`,
+                          price: card.price,
+                          quantity: 1,
+                          image: card.image,
+                        })
+                      }
+                      className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                    >
+                      Buy
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          
-        </div>
-      </section> */}
-    <section className="py-24 bg-black relative">
-  {/* Позадински сјај за амбиент */}
-  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-red-600/5 blur-[120px] pointer-events-none"></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                id: `${genderTab}-nutrition-bulking`,
+                badge: `${genderTab === "men" ? "Men" : "Women"} • Muscle Gain`,
+                title: "BULKING NUTRITION PLAN",
+                goal: "Clean Muscle Surplus",
+                duration: "Full Guide + Vault Recipes",
+                desc: "Structured high-protein surplus designed to add lean mass without unnecessary fat gain.",
+                oldPrice: 22,
+                price: 15,
+                image: "/images/advanced.jpg",
+              },
+              {
+                id: `${genderTab}-nutrition-cutting`,
+                badge: `${genderTab === "men" ? "Men" : "Women"} • Fat Loss`,
+                title: "CUTTING NUTRITION PLAN",
+                goal: "Shred & Definition",
+                duration: "Full Guide + Vault Recipes",
+                desc: "Precision calorie deficit to drop body fat while preserving muscle density and strength.",
+                oldPrice: 22,
+                price: 15,
+                image: "/images/beginner.jpg",
+              },
+            ].map((card) => (
+              <div
+                key={card.id}
+                className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6 sm:p-8 flex flex-col justify-between hover:border-red-700/50 hover:shadow-xl transition-all"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="bg-red-50 text-red-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+                      {card.badge}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-zinc-400">
+                      <Lock size={12} /> Vault Exclusive
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-black uppercase tracking-tight mb-3">
+                    {card.title}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-zinc-200/70 mb-4">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">
+                        Goal
+                      </p>
+                      <p className="text-xs font-bold text-zinc-900 mt-0.5">
+                        {card.goal}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-zinc-400">
+                        Includes
+                      </p>
+                      <p className="text-xs font-bold text-zinc-900 mt-0.5">
+                        {card.duration}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-zinc-600 leading-relaxed mb-6">
+                    {card.desc}
+                  </p>
+                </div>
 
-  {/* HEADER СЕКЦИЈА */}
-  <div className="max-w-7xl mx-auto px-4 sm:px-8 text-center mb-16 relative z-10">
-    <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white mb-4">
-      Client <span className="text-red-600">Transformations</span>
-    </h2>
-    <p className="text-zinc-500 text-xs md:text-sm font-bold uppercase tracking-[0.2em] max-w-2xl mx-auto">
-      The proof is in the progress. Real athletes, real results.
-    </p>
-  </div>
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-200">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-zinc-400 line-through font-bold">
+                      {convert(card.oldPrice)}
+                    </span>
+                    <span className="text-2xl font-black text-zinc-950">
+                      {convert(card.price)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() =>
+                      addToCart({
+                        id: card.id,
+                        name: `${card.title} (${genderTab === "men" ? "Men" : "Women"})`,
+                        price: card.price,
+                        quantity: 1,
+                        image: card.image,
+                      })
+                    }
+                    className="bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-6 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer"
+                  >
+                    Buy
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
- {/* ГРИД СО КАРТИЧКИ */}
-  <div className="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-    
-    {/* КАРТИЧКА 1 */}
-    <div className="bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden group hover:border-zinc-700 transition-all duration-500 shadow-lg hover:shadow-[0_0_40px_rgba(220,38,38,0.1)] flex flex-col">
-       {/* Слики Before / After */}
-       <div className="relative h-64 md:h-80 w-full flex overflow-hidden">
-          {/* Before */}
-          <div className="w-1/2 h-full relative border-r border-black overflow-hidden">
-             {/* НОВА АНИМАЦИЈА: Светло на старт, зум и brightness на hover */}
-             <img src="/images/before1.jpg" alt="Before" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-zinc-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm">Before</span>
+      {/* 4. COMPLETE TRANSFORMATION BUNDLE */}
+      <section className="py-20 bg-zinc-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-6 space-y-4">
+            <span className="inline-block px-3 py-1 rounded-md border border-red-700/60 text-red-500 text-[10px] font-black uppercase tracking-widest">
+              Training + Nutrition Package
+            </span>
+            <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.95]">
+              Complete <br />
+              <span className="text-red-500">Transformation</span>
+            </h2>
+            <p className="text-zinc-400 text-sm sm:text-base max-w-md">
+              Get your training plan, nutrition plan, exercise video library,
+              and recipe collection aligned together in one complete package.
+            </p>
           </div>
-          {/* After */}
-          <div className="w-1/2 h-full relative overflow-hidden">
-             <img src="/images/after1.jpg" alt="After" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 right-3 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-[0_0_10px_rgba(220,38,38,0.5)]">After</span>
-          </div>
-       </div>
-       {/* Инфо и Цитат */}
-       <div className="p-6 md:p-8 flex-1 flex flex-col justify-between z-10 bg-zinc-950 relative">
-          <div>
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-black text-white text-lg uppercase tracking-widest">Marko T.</h3>
-                <span className="text-red-500 text-[9px] font-bold uppercase tracking-widest bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-md">
-                  -15 KG / 12 Weeks
+
+          <div className="lg:col-span-6 bg-white text-zinc-950 rounded-3xl p-7 sm:p-9 shadow-2xl">
+            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-5">
+              Included in the Package
+            </p>
+            <div className="divide-y divide-zinc-200 mb-6">
+              <div className="py-3.5 flex items-start gap-4">
+                <span className="text-xs font-black text-red-700 mt-0.5">01</span>
+                <div>
+                  <h4 className="font-black uppercase text-sm">Training Plan</h4>
+                  <p className="text-xs text-zinc-500">
+                    For Men or Women • Beginner or Advanced (2x/3x/4x)
+                  </p>
+                </div>
+              </div>
+              <div className="py-3.5 flex items-start gap-4">
+                <span className="text-xs font-black text-red-700 mt-0.5">02</span>
+                <div>
+                  <h4 className="font-black uppercase text-sm">Nutrition Plan + Vault Access</h4>
+                  <p className="text-xs text-zinc-500">
+                    Bulking or Cutting + Exercise Videos &amp; Healthy Recipes
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-end justify-between mb-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                Complete Package
+              </p>
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-sm text-zinc-400 line-through font-bold">
+                  {convert(43)}
                 </span>
-             </div>
-             <p className="text-zinc-400 text-xs leading-relaxed italic mb-6">
-               "Coach Shuki's program completely changed my mindset and body. No BS, just pure hard work and a diet that actually makes sense."
-             </p>
-          </div>
-       </div>
-    </div>
+                <span className="text-3xl font-black">{convert(24)}</span>
+              </div>
+            </div>
 
-    {/* КАРТИЧКА 2 */}
-    <div className="bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden group hover:border-zinc-700 transition-all duration-500 shadow-lg hover:shadow-[0_0_40px_rgba(220,38,38,0.1)] flex flex-col">
-       <div className="relative h-64 md:h-80 w-full flex overflow-hidden">
-          <div className="w-1/2 h-full relative border-r border-black overflow-hidden">
-             <img src="/images/before2.jpg" alt="Before" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-zinc-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm">Before</span>
+            <button
+              onClick={() =>
+                addToCart({
+                  id: "combo-bundle",
+                  name: "Complete Transformation Package (Training + Nutrition)",
+                  price: 24,
+                  quantity: 1,
+                  image: "/images/advanced.jpg",
+                })
+              }
+              className="w-full bg-zinc-950 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all flex items-center justify-between px-6 cursor-pointer active:scale-[0.98]"
+            >
+              <span>Get the Package</span>
+              <ArrowRight size={16} />
+            </button>
           </div>
-          <div className="w-1/2 h-full relative overflow-hidden">
-             <img src="/images/after2.jpg" alt="After" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 right-3 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-[0_0_10px_rgba(220,38,38,0.5)]">After</span>
-          </div>
-       </div>
-       <div className="p-6 md:p-8 flex-1 flex flex-col justify-between z-10 bg-zinc-950 relative">
-          <div>
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-black text-white text-lg uppercase tracking-widest">Stefan R.</h3>
-                <span className="text-green-500 text-[9px] font-bold uppercase tracking-widest bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-md">
-                  +8 KG Muscle / 16 Weeks
+        </div>
+      </section>
+
+      {/* 5. SUCCESS STORIES */}
+      <section id="results" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="mb-12">
+          <p className="text-xs font-black uppercase tracking-widest text-red-700 mb-2">
+            500+ Success Stories
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter">
+            Success <span className="text-red-700">Stories</span>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              num: "01/03",
+              name: "Marko T.",
+              result: "-15 KG / 12 Weeks",
+              quote:
+                "Working with Shuki was the best investment of my life. Real structure, real results, and habits I'll keep forever.",
+              before: "/images/before1.jpg",
+              after: "/images/after1.jpg",
+            },
+            {
+              num: "02/03",
+              name: "Stefan R.",
+              result: "+8 KG Muscle",
+              quote:
+                "Before starting, I was stuck in bad habits and low energy. Now my body and mindset are completely transformed.",
+              before: "/images/before2.jpg",
+              after: "/images/after2.jpg",
+            },
+            {
+              num: "03/03",
+              name: "Aleks M.",
+              result: "-22 KG / 6 Months",
+              quote:
+                "I was skeptical at first, but week by week new definition appeared that I had never seen before.",
+              before: "/images/before3.jpg",
+              after: "/images/after3.jpg",
+            },
+          ].map((story) => (
+            <div
+              key={story.num}
+              className="bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden flex flex-col"
+            >
+              <div className="relative h-56 flex">
+                <img src={story.before} alt="Before" className="w-1/2 h-full object-cover border-r border-white" />
+                <img src={story.after} alt="After" className="w-1/2 h-full object-cover" />
+                <span className="absolute top-3 right-3 bg-white/95 text-zinc-950 text-[10px] font-black px-2.5 py-1 rounded-full">
+                  {story.num}
                 </span>
-             </div>
-             <p className="text-zinc-400 text-xs leading-relaxed italic mb-6">
-               "I struggled to gain mass for years. The Advanced Program unlocked the exact blueprint I needed to finally build quality muscle."
-             </p>
-          </div>
-       </div>
-    </div>
-
-    {/* КАРТИЧКА 3 */}
-    <div className="bg-zinc-950 border border-zinc-900 rounded-3xl overflow-hidden group hover:border-zinc-700 transition-all duration-500 shadow-lg hover:shadow-[0_0_40px_rgba(220,38,38,0.1)] flex flex-col md:hidden lg:flex">
-       <div className="relative h-64 md:h-80 w-full flex overflow-hidden">
-          <div className="w-1/2 h-full relative border-r border-black overflow-hidden">
-             <img src="/images/before3.jpg" alt="Before" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-zinc-400 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm">Before</span>
-          </div>
-          <div className="w-1/2 h-full relative overflow-hidden">
-             <img src="/images/after3.jpg" alt="After" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110" />
-             <span className="absolute bottom-3 right-3 bg-red-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-sm shadow-[0_0_10px_rgba(220,38,38,0.5)]">After</span>
-          </div>
-       </div>
-       <div className="p-6 md:p-8 flex-1 flex flex-col justify-between z-10 bg-zinc-950 relative">
-          <div>
-             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-black text-white text-lg uppercase tracking-widest">Aleks M.</h3>
-                <span className="text-red-500 text-[9px] font-bold uppercase tracking-widest bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-md">
-                  -22 KG / 6 Months
-                </span>
-             </div>
-             <p className="text-zinc-400 text-xs leading-relaxed italic mb-6">
-               "This isn't just a workout plan, it's a lifestyle reset. Shuki's guidance helped me drop 22KG and I've never felt stronger."
-             </p>
-          </div>
-       </div>
-    </div>
-
-  </div>
-</section>
-
-
-{/* СЕКЦИЈА: HOW IT WORKS */}
-<section className="py-24 bg-black relative border-t border-zinc-900">
-  <div className="max-w-7xl mx-auto px-4 sm:px-8 text-center relative z-10">
-    
-    <div className="mb-16">
-      <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white mb-4">
-        How To <span className="text-red-600">Start</span>
-      </h2>
-      <p className="text-zinc-500 text-xs font-bold uppercase tracking-[0.2em]">Your transformation in 3 simple steps</p>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative">
-      
-      {/* Линија што ги поврзува чекорите (само на десктоп) */}
-      <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent z-0"></div>
-
-      {/* Чекор 1 */}
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black group hover:border-red-600 transition-colors">
-          <span className="text-4xl font-black text-zinc-800 group-hover:text-red-600 transition-colors">1</span>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-black uppercase text-base">{story.name}</h3>
+                  <span className="text-[10px] font-black uppercase bg-red-50 text-red-700 px-2.5 py-1 rounded-full">
+                    {story.result}
+                  </span>
+                </div>
+                <p className="text-xs text-zinc-600 leading-relaxed">
+                  &ldquo;{story.quote}&rdquo;
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-        <h3 className="text-white font-black uppercase tracking-widest text-lg mb-2">Choose Plan</h3>
-        <p className="text-zinc-500 text-xs leading-relaxed max-w-[250px]">
-          Select the Beginner or Advanced blueprint based on your current aesthetic goals.
-        </p>
-      </div>
+      </section>
 
-      {/* Чекор 2 */}
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black group hover:border-red-600 transition-colors">
-          <span className="text-4xl font-black text-zinc-800 group-hover:text-red-600 transition-colors">2</span>
+      {/* 6. POPULAR QUESTIONS */}
+      <section id="faq" className="py-20 bg-zinc-50 border-t border-zinc-200/80">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter mb-2">
+              Popular <span className="text-red-700">Questions</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-500 font-medium">
+              Answers to the most common questions about training and nutrition.
+            </p>
+          </div>
+
+          <div className="divide-y divide-zinc-200 border-y border-zinc-200">
+            {FAQ_ITEMS.map((item, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div key={idx} className="py-4">
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between gap-4 text-left font-bold text-sm sm:text-base text-zinc-950 hover:text-red-700 transition-colors cursor-pointer"
+                  >
+                    <span>{item.q}</span>
+                    <span className="text-red-700 flex-shrink-0">
+                      {isOpen ? <Minus size={18} /> : <Plus size={18} />}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <p className="mt-3 text-sm text-zinc-600 leading-relaxed pr-8">
+                      {item.a}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <h3 className="text-white font-black uppercase tracking-widest text-lg mb-2">Secure Payment</h3>
-        <p className="text-zinc-500 text-xs leading-relaxed max-w-[250px]">
-          Checkout securely via Bank Transfer, Crypto, or PayPal and upload your receipt.
-        </p>
-      </div>
-
-      {/* Чекор 3 */}
-      <div className="relative z-10 flex flex-col items-center">
-        <div className="w-24 h-24 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-black group hover:border-red-600 transition-colors">
-          <span className="text-4xl font-black text-zinc-800 group-hover:text-red-600 transition-colors">3</span>
-        </div>
-        <h3 className="text-white font-black uppercase tracking-widest text-lg mb-2">Enter The Vault</h3>
-        <p className="text-zinc-500 text-xs leading-relaxed max-w-[250px]">
-          Get instant access to your private dashboard and download your materials.
-        </p>
-      </div>
-
-    </div>
-
-    {/* Копче под чекорите */}
-    <div className="mt-16">
-      <Link href="#programs" className="inline-block bg-red-600 text-white font-black uppercase tracking-[0.2em] py-4 px-10 rounded-xl hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] active:scale-95 text-xs">
-        Choose Your Plan Now
-      </Link>
-    </div>
-
-  </div>
-</section>
+      </section>
     </main>
   );
 }

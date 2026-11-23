@@ -7,27 +7,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../utils/supabase";
 import { useCurrency } from "@/app/context/CurrencyContext";
+import { Download, Lock, Clock, FileText } from "lucide-react";
 
-// ═══════════════════════════════════════════════════
-// ДОДАЈ НОВА ПРОГРАМА ОВДЕ КОГА ЌЕ ИМАШ НОВА
-// ═══════════════════════════════════════════════════
 const ALL_PROGRAMS = [
-  {
-    id: "beginner-program",
-    altIds: ["beginner-1"],
-    name: "Beginner Program",
-    description: "12-Week Transformation Blueprint",
-    image: "/images/beginner.jpg",
-    downloadPath: "/downloads/beginner-program.pdf",
-  },
-  {
-    id: "advanced-program",
-    altIds: ["advanced-1"],
-    name: "Master of Aesthetics",
-    description: "16-Week Elite Performance Plan",
-    image: "/images/advanced.jpg",
-    downloadPath: "/downloads/advanced-program.pdf",
-  },
+  { id: "beginner-program", altIds: ["beginner-1", "beginner-2x", "beginner-3x", "beginner-4x"], name: "Beginner Program", description: "8-Week Foundation Blueprint", image: "/images/beginner.jpg", downloadPath: "/downloads/beginner-program.pdf" },
+  { id: "advanced-program", altIds: ["advanced-1", "advanced-2x", "advanced-3x", "advanced-4x"], name: "Advanced Program", description: "8-Week Muscle Domination Plan", image: "/images/advanced.jpg", downloadPath: "/downloads/advanced-program.pdf" },
+  { id: "nutrition-bulking", altIds: [], name: "Bulking Nutrition Plan", description: "Clean Muscle Surplus Guide", image: "/images/advanced.jpg", downloadPath: "/downloads/bulking-plan.pdf" },
+  { id: "nutrition-cutting", altIds: [], name: "Cutting Nutrition Plan", description: "Shred & Definition Guide", image: "/images/beginner.jpg", downloadPath: "/downloads/cutting-plan.pdf" },
+  { id: "combo-bundle", altIds: [], name: "Complete Bundle (Training + Nutrition)", description: "Full Training & Nutrition Pack", image: "/images/advanced.jpg", downloadPath: "/downloads/combo-bundle.pdf" },
+  { id: "stronger-together-duo", altIds: [], name: "Stronger Together (Duo Plan)", description: "8-Week Partner Transformation", image: "/images/IMG_7392.jpg", downloadPath: "/downloads/stronger-together.pdf" },
 ];
 
 type ProgramStatus = {
@@ -40,66 +28,47 @@ export default function Dashboard() {
   const router = useRouter();
   const { convert } = useCurrency();
 
-  // Ги чуваме и статусите на програмите и целосната историја на нарачки
   const [programStatuses, setProgramStatuses] = useState<Record<string, ProgramStatus>>({});
   const [ordersHistory, setOrdersHistory] = useState<any[]>([]);
   const [isLoadingDB, setIsLoadingDB] = useState(true);
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      router.push("/");
-    }
+    if (isLoaded && !isSignedIn) router.push("/");
   }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     async function fetchOrders() {
       if (!user) return;
-
       try {
         const { data, error } = await supabase
           .from("orders")
-          .select("*") // Влечеме сè за да имаме податоци за историјата
+          .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-
         if (data) {
-          setOrdersHistory(data); // Ја зачувуваме историјата
-
+          setOrdersHistory(data);
           const statuses: Record<string, ProgramStatus> = {};
 
           for (const order of data) {
             const itemsArray =
-              typeof order.items === "string"
-                ? JSON.parse(order.items)
-                : order.items || [];
+              typeof order.items === "string" ? JSON.parse(order.items) : order.items || [];
 
             for (const program of ALL_PROGRAMS) {
               const hasProgram = itemsArray.some(
-                (item: any) =>
-                  item.id === program.id || program.altIds.includes(item.id)
+                (item: any) => item.id === program.id || program.altIds.includes(item.id)
               );
-
               if (!hasProgram) continue;
 
               const existing = statuses[program.id];
-
-              // completed има приоритет над pending
               if (order.status === "completed" && existing?.status !== "completed") {
-                statuses[program.id] = {
-                  status: "completed",
-                  expiresAt: order.expires_at || null,
-                };
+                statuses[program.id] = { status: "completed", expiresAt: order.expires_at || null };
               } else if (!existing) {
-                statuses[program.id] = {
-                  status: order.status,
-                  expiresAt: order.expires_at || null,
-                };
+                statuses[program.id] = { status: order.status, expiresAt: order.expires_at || null };
               }
             }
           }
-
           setProgramStatuses(statuses);
         }
       } catch (err) {
@@ -109,9 +78,7 @@ export default function Dashboard() {
       }
     }
 
-    if (isSignedIn && user) {
-      fetchOrders();
-    }
+    if (isSignedIn && user) fetchOrders();
   }, [isSignedIn, user]);
 
   function isExpired(expiresAt: string | null): boolean {
@@ -122,84 +89,70 @@ export default function Dashboard() {
   function formatExpiry(expiresAt: string | null): string {
     if (!expiresAt) return "";
     return new Date(expiresAt).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   }
 
   if (!isLoaded || !isSignedIn || isLoadingDB) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-zinc-800 border-t-red-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-zinc-500 font-bold uppercase tracking-[0.2em] text-xs animate-pulse">Decrypting Vault...</p>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-4 border-zinc-200 border-t-red-700 rounded-full animate-spin mb-4" />
+        <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">
+          Loading Vault...
+        </p>
       </div>
     );
   }
 
   const ownedPrograms = ALL_PROGRAMS.filter((p) => programStatuses[p.id]);
-  const hasAnyProgram = ownedPrograms.length > 0;
-  const pendingOrders = ordersHistory.filter(o => o.status.startsWith("pending_"));
+  const pendingOrders = ordersHistory.filter((o) => o.status.startsWith("pending_"));
 
   return (
-    <main className="min-h-screen bg-black text-white pt-12 md:pt-24 pb-20 px-4 sm:px-8">
-      <div className="max-w-7xl mx-auto w-full">
-
-        {/* ХЕДЕР СЕКЦИЈА */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 border-b border-zinc-900 pb-8 gap-6">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.2)] flex-shrink-0 bg-zinc-900">
+    <main className="min-h-screen bg-white text-zinc-950 py-12 md:py-16 pb-28 lg:pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 border-b border-zinc-200 pb-8 gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 border-red-700 bg-zinc-100 flex-shrink-0">
               <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-tight">
-                The <span className="text-red-600">Vault</span>
+              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">
+                My <span className="text-red-700">Vault</span>
               </h1>
-              <p className="text-zinc-500 font-bold uppercase tracking-[0.2em] text-xs mt-2">
+              <p className="text-zinc-500 font-bold text-xs mt-1">
                 {user.primaryEmailAddress?.emailAddress}
               </p>
             </div>
           </div>
 
           <SignOutButton>
-            <button className="bg-zinc-950 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white font-bold uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl transition-all self-start md:self-auto">
+            <button className="bg-zinc-100 hover:bg-zinc-950 hover:text-white text-zinc-700 font-black uppercase tracking-wider text-[11px] px-6 py-3 rounded-xl transition-all cursor-pointer">
               Sign Out
             </button>
           </SignOutButton>
         </div>
 
-        {/* ГЛАВЕН ЛЕЈАУТ (МРЕЖА) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-          
-          {/* ЛЕВА КОЛОНА: ПРОГРАМИ И АЛЕРТИ */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* АЛЕРТ ЗА ЧЕКАЊЕ ОДОБРУВАЊЕ */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
+          {/* LEFT: PROGRAMS */}
+          <div className="lg:col-span-2 space-y-6">
             {pendingOrders.length > 0 && (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-5 flex items-start sm:items-center gap-4">
-                <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center text-yellow-500 flex-shrink-0 animate-pulse">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center gap-4">
+                <Clock className="text-amber-600 flex-shrink-0" size={22} />
                 <div>
-                  <h4 className="font-black uppercase tracking-widest text-sm text-yellow-500">Verification Pending</h4>
-                  <p className="text-[10px] font-bold tracking-widest uppercase text-zinc-400 mt-1">
-                    You have {pendingOrders.length} order(s) under review. Access will be granted shortly.
+                  <h4 className="font-black uppercase text-xs text-amber-800">
+                    Verification Pending
+                  </h4>
+                  <p className="text-xs text-amber-700 mt-0.5">
+                    You have {pendingOrders.length} order(s) under review. Your programs will unlock shortly.
                   </p>
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
-              <h2 className="text-xl font-black uppercase tracking-widest text-white">
-                Active <span className="text-red-600">Programs</span>
-              </h2>
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest border border-zinc-800 px-3 py-1 rounded-full">
-                Secured Vault
-              </span>
-            </div>
-
-            {/* ЛИСТА НА ПРОГРАМИ */}
-            {hasAnyProgram ? (
+            {ownedPrograms.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {ownedPrograms.map((program) => {
                   const ps = programStatuses[program.id];
@@ -208,159 +161,100 @@ export default function Dashboard() {
                   const isActive = isCompleted && !expired;
 
                   return (
-                    <div key={program.id} className="bg-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden group flex flex-col hover:border-zinc-600 transition-colors">
-                      <div className="relative h-48 w-full bg-zinc-900 overflow-hidden border-b border-zinc-900">
+                    <div
+                      key={program.id}
+                      className="bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden flex flex-col"
+                    >
+                      <div className="relative h-44 w-full bg-zinc-200">
                         <Image
                           src={program.image}
                           alt={program.name}
                           fill
-                          className={`object-cover transition-transform duration-700 group-hover:scale-105 ${!isActive ? 'grayscale' : ''}`}
+                          className={`object-cover ${!isActive ? "grayscale" : ""}`}
                         />
-                        {/* БЕЏОВИ ЗА СТАТУС НА СЛИКАТА */}
-                        <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
-                          {isActive && (
-                            <div className="bg-green-500/20 backdrop-blur-md border border-green-500/50 text-green-500 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
-                            </div>
-                          )}
-                          {isCompleted && expired && (
-                            <div className="bg-orange-500/20 backdrop-blur-md border border-orange-500/50 text-orange-500 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
-                              Expired
-                            </div>
-                          )}
-                          {!isCompleted && (
-                            <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 text-yellow-500 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
-                              Pending
-                            </div>
-                          )}
-                        </div>
+                        <span
+                          className={`absolute top-3 right-3 text-[10px] font-black uppercase px-3 py-1 rounded-full ${
+                            isActive
+                              ? "bg-green-600 text-white"
+                              : expired
+                              ? "bg-orange-600 text-white"
+                              : "bg-amber-500 text-white"
+                          }`}
+                        >
+                          {isActive ? "Unlocked" : expired ? "Expired" : "Pending"}
+                        </span>
                       </div>
 
-                      <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+                      <div className="p-6 flex-1 flex flex-col justify-between">
                         <div>
-                          <h3 className="font-black uppercase text-lg mb-1 text-white leading-tight">{program.name}</h3>
-                          <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-6">{program.description}</p>
+                          <h3 className="font-black uppercase text-lg leading-tight mb-1">
+                            {program.name}
+                          </h3>
+                          <p className="text-xs text-zinc-500 mb-5">{program.description}</p>
                         </div>
 
-                        <div>
-                          {ps.expiresAt && (
-                            <p className={`text-[9px] font-bold uppercase tracking-widest mb-4 flex justify-between border-b border-zinc-900 pb-2 ${expired ? "text-orange-500" : "text-zinc-400"}`}>
-                              <span>Status:</span>
-                              <span>{expired ? "Expired" : `Ends: ${formatExpiry(ps.expiresAt)}`}</span>
-                            </p>
-                          )}
-
-                          {/* КОПЧИЊА */}
-                          {isActive && (
-                            <a
-                              href={program.downloadPath}
-                              download
-                              className="w-full bg-white text-black font-black uppercase tracking-widest py-3.5 rounded-xl hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center gap-3 active:scale-[0.98] text-xs shadow-lg"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                              </svg>
-                              Download PDF
-                            </a>
-                          )}
-                          {isCompleted && expired && (
-                            <div className="w-full bg-zinc-900 text-zinc-500 font-bold uppercase tracking-widest py-3 rounded-xl cursor-not-allowed flex flex-col items-center justify-center gap-0.5 border border-zinc-800">
-                              <span className="text-[10px] text-orange-500">Access Expired</span>
-                              <span className="text-[8px] text-zinc-500">Contact support to renew</span>
-                            </div>
-                          )}
-                          {!isCompleted && (
-                            <button disabled className="w-full bg-zinc-900 text-zinc-500 font-bold uppercase tracking-widest py-3 rounded-xl cursor-not-allowed flex flex-col items-center justify-center gap-0.5 border border-zinc-800">
-                              <span className="text-[10px] text-yellow-500">Processing Payment</span>
-                              <span className="text-[8px] text-zinc-500">Waiting for Admin</span>
-                            </button>
-                          )}
-                        </div>
+                        {isActive ? (
+                          <a
+                            href={program.downloadPath}
+                            download
+                            className="w-full bg-red-700 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all"
+                          >
+                            <Download size={15} /> Download PDF
+                          </a>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full bg-zinc-200 text-zinc-500 font-bold uppercase text-xs py-3.5 rounded-xl cursor-not-allowed"
+                          >
+                            {expired ? "Access Expired" : "Waiting for Approval"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center p-12 text-center bg-zinc-950/30">
-                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 text-zinc-600">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h3 className="font-black uppercase text-white text-lg mb-2 tracking-widest">No Active Programs</h3>
-                <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mb-8">
-                  Purchase a program to unlock your materials.
+              <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center bg-zinc-50">
+                <Lock className="mx-auto text-zinc-400 mb-4" size={32} />
+                <h3 className="font-black uppercase text-lg mb-2">No Active Programs</h3>
+                <p className="text-xs text-zinc-500 mb-6">
+                  Purchase a training or nutrition plan to unlock your PDF materials here.
                 </p>
-                <Link href="/" className="bg-red-600 text-white text-[10px] font-black uppercase tracking-widest py-3.5 px-8 rounded-xl hover:bg-red-700 transition-colors shadow-lg">
-                  Browse Store
+                <Link
+                  href="/#programs"
+                  className="inline-block bg-red-700 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all"
+                >
+                  Browse Programs
                 </Link>
               </div>
             )}
           </div>
 
-          {/* ДЕСНА КОЛОНА: ИСТОРИЈА И ПОДДРШКА */}
-          <div className="space-y-8">
-            
-            {/* ИСТОРИЈА НА НАРАЧКИ */}
-            <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-6 lg:p-8">
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-6 flex items-center gap-2 border-b border-zinc-900 pb-4">
-                <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Order History
-              </h3>
-              
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-                {ordersHistory.length === 0 ? (
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 text-center py-4">No past orders</p>
-                ) : (
-                  ordersHistory.map((order) => (
-                    <div key={order.id} className="border-b border-zinc-900/50 pb-4 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-[10px] font-black uppercase text-zinc-300">{formatExpiry(order.created_at)}</span>
-                        <span className="text-[10px] font-black text-white">{convert(order.total_price)}</span>
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-sm ${
-                          order.status === "completed" ? "bg-green-500/10 text-green-500" :
-                          order.status.startsWith("pending") ? "bg-yellow-500/10 text-yellow-500" :
-                          "bg-zinc-800 text-zinc-500"
-                        }`}>
-                          {order.status.startsWith("pending") ? "Pending" : order.status}
-                        </span>
-                        
-                        {order.promo_code && (
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">
-                            Promo: <span className="text-red-500">{order.promo_code}</span>
-                          </span>
-                        )}
-                      </div>
+          {/* RIGHT: ORDER HISTORY */}
+          <div className="bg-zinc-50 border border-zinc-200 rounded-3xl p-6">
+            <h3 className="text-sm font-black uppercase tracking-wider mb-5 flex items-center gap-2 pb-3 border-b border-zinc-200">
+              <FileText size={16} className="text-red-700" /> Order History
+            </h3>
+            <div className="space-y-4">
+              {ordersHistory.length === 0 ? (
+                <p className="text-xs text-zinc-400 text-center py-4">No past orders</p>
+              ) : (
+                ordersHistory.map((order) => (
+                  <div key={order.id} className="border-b border-zinc-200/70 pb-3 last:border-0">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span>{formatExpiry(order.created_at)}</span>
+                      <span className="font-black">{convert(order.total_price)}</span>
                     </div>
-                  ))
-                )}
-              </div>
+                    <span className="inline-block mt-1 text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zinc-200 text-zinc-700">
+                      {order.status.startsWith("pending") ? "Pending" : order.status}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
-
-            {/* ПОДДРШКА WIDGET */}
-            <div className="bg-red-600/5 border border-red-600/20 rounded-3xl p-6 text-center">
-              <div className="w-12 h-12 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-              <h4 className="font-black uppercase text-sm text-white mb-2">Need Help?</h4>
-              <p className="text-[9px] font-bold tracking-widest uppercase text-zinc-400 mb-6 leading-relaxed">
-                Having trouble accessing your materials or need a receipt verified?
-              </p>
-              <Link href="/contact" className="inline-block w-full bg-zinc-950 text-white border border-zinc-800 font-bold uppercase tracking-widest text-[10px] px-6 py-3 rounded-xl hover:bg-white hover:text-black hover:border-white transition-colors">
-                Contact Support
-              </Link>
-            </div>
-
           </div>
         </div>
-
       </div>
     </main>
   );
