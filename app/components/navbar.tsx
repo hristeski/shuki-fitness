@@ -81,8 +81,8 @@ export default function Navbar() {
           <Link href="/" className="flex flex-col leading-none group flex-shrink-0">
             <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter uppercase text-stone-950">
               EVOLUTION
-              <span className="text-red-800 group-hover:text-red-700 transition-colors">
-                BODY
+              <span className="ml-2 text-red-800 group-hover:text-red-700 transition-colors">
+                 BODY
               </span>
             </span>
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 mt-0.5">
