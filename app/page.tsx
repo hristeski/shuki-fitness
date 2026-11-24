@@ -35,6 +35,7 @@ type ProgramCard = {
   price: number;
   image: string;
   cartName: string;
+  isFood?: boolean;
 };
 
 export default function Home() {
@@ -44,6 +45,7 @@ export default function Home() {
   const [genderTab, setGenderTab] = useState<"men" | "women">("men");
   const [categoryTab, setCategoryTab] = useState<"training" | "nutrition">("training");
   const [locationTab, setLocationTab] = useState<"gym" | "home">("gym");
+  const [bundleGender, setBundleGender] = useState<"men" | "women">("men");
 
   // In-page Modals (no redirects)
   const [selectedProgram, setSelectedProgram] = useState<ProgramCard | null>(null);
@@ -51,6 +53,7 @@ export default function Home() {
 
   const isMen = genderTab === "men";
   const isNutrition = categoryTab === "nutrition";
+  const isBundleMen = bundleGender === "men";
 
   // Dynamic accent theme: Nutrition = Green, Men = Blue, Women = Pink
   const activeTheme = isNutrition
@@ -148,25 +151,6 @@ export default function Home() {
             price: 15,
             image: isMen ? "/images/IMG_7392.jpg" : "/images/women-home.webp",
           },
-          {
-            id: `${genderTab}-home-advanced-3x`,
-            badge: `For ${isMen ? "Men" : "Women"} • Home Pro`,
-            sub: "HOME WORKOUT",
-            title: isMen ? "HOME ATHLETE PROTOCOL" : "WOMEN'S HOME GLUTE & CORE PRO",
-            cartName: isMen ? "HOME ATHLETE PROTOCOL" : "WOMEN'S HOME GLUTE & CORE PRO",
-            goal: "Strength & Conditioning at Home",
-            duration: "8-Week Home Program",
-            desc: "High-intensity home sessions using progressive bodyweight, bands, and dumbbells for real muscle stimulus.",
-            highlights: [
-              "Intense progressive home training split",
-              "Targeted muscle & conditioning blocks",
-              "Unlocks Exercise Videos & Healthy Recipes in Vault",
-              "Instant PDF download after approval",
-            ],
-            oldPrice: 22,
-            price: 15,
-            image: isMen ? "/images/beginner.jpg" : "/images/women-home.webp",
-          },
         ];
 
   const nutritionCards: ProgramCard[] = [
@@ -188,6 +172,7 @@ export default function Home() {
       oldPrice: 22,
       price: 15,
       image: "/images/nutrition1.jpg",
+      isFood: true,
     },
     {
       id: `${genderTab}-nutrition-cutting`,
@@ -207,6 +192,27 @@ export default function Home() {
       oldPrice: 22,
       price: 15,
       image: "/images/nutrition2.png",
+      isFood: true,
+    },
+    {
+      id: `${genderTab}-nutrition-vegan`,
+      badge: `${isMen ? "Men" : "Women"} • Plant-Based`,
+      sub: "VEGAN NUTRITION",
+      title: "VEGAN NUTRITION PLAN",
+      cartName: `VEGAN NUTRITION PLAN (${isMen ? "Men" : "Women"})`,
+      goal: "100% Plant-Based Performance",
+      duration: "Full Guide + Vault Recipes",
+      desc: "Complete high-protein plant-based blueprint built to hit daily amino acid, energy, and physique goals without animal products.",
+      highlights: [
+        "High-protein vegan meal plans (tofu, legumes, tempeh, oats)",
+        "Balanced micronutrients & B12/Omega guidance",
+        "Adaptable for both Fat Loss and Lean Muscle Gain",
+        "Unlocks Member Vault Recipes & Exercise Videos",
+      ],
+      oldPrice: 22,
+      price: 15,
+      image: "/images/nutrition3.jpg",
+      isFood: true,
     },
   ];
 
@@ -273,8 +279,8 @@ export default function Home() {
             </div>
 
             <p className="text-stone-300 text-sm sm:text-base lg:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Structured gym and home training paired with precision Bulking &amp;
-              Cutting nutrition. No guesswork — just real discipline.
+              Structured gym and home training paired with precision Bulking,
+              Cutting, and Vegan nutrition. No guesswork — just real discipline.
             </p>
 
             {/* GLOWING PROMO TICKET CARD */}
@@ -359,13 +365,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* INTERACTIVE FEATURE BAR — FULLY READABLE ON MOBILE */}
+      {/* INTERACTIVE FEATURE BAR */}
       <section className="relative z-20 -mt-5 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 bg-white/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-2.5 sm:p-4 shadow-xl shadow-stone-900/5">
           {[
             { icon: Dumbbell, title: "Gym & Home", sub: "Train anywhere" },
             { icon: Zap, title: "Flexible Splits", sub: "Fits your week" },
-            { icon: Utensils, title: "Bulking & Cutting", sub: "Clear nutrition" },
+            { icon: Utensils, title: "Bulking & Cutting", sub: "Plus Vegan plans" },
             { icon: Lock, title: "Member Vault", sub: "Videos & recipes" },
           ].map((item) => {
             const Icon = item.icon;
@@ -461,7 +467,7 @@ export default function Home() {
         </div>
       </ScrollReveal>
 
-      {/* 3. PROGRAMS & NUTRITION (CLASSIC LAYOUT — MEN BLUE / WOMEN PINK / NUTRITION GREEN) */}
+      {/* 3. PROGRAMS & NUTRITION */}
       <section id="programs" className="py-12 relative overflow-hidden">
         <div
           className={`pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[140px] transition-colors duration-700 ${activeTheme.glow}`}
@@ -479,10 +485,10 @@ export default function Home() {
             </p>
           </div>
 
-          {/* COMPACT 3-STEP FILTER BAR (NO 4. WEEKLY SCHEDULE) */}
+          {/* 3-STEP FILTER BAR */}
           <div className="bg-white/90 backdrop-blur-md border border-stone-200/90 rounded-3xl p-3.5 sm:p-4 mb-8 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* 1. CATEGORY: MEN (BLUE) / WOMEN (PINK) */}
+              {/* 1. CATEGORY */}
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
                   1. Category
@@ -522,7 +528,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 2. FOCUS: TRAINING / NUTRITION (GREEN) */}
+              {/* 2. FOCUS */}
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
                   2. Focus
@@ -556,7 +562,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 3. LOCATION (ONLY ACTIVE WHEN TRAINING) */}
+              {/* 3. LOCATION */}
               <div className={isNutrition ? "opacity-45 pointer-events-none" : ""}>
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-1.5 px-1">
                   3. Location
@@ -587,28 +593,52 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PROGRAM & NUTRITION CARDS (UN-ZOOMED IMAGES + COMPACT FULL-VIEW HEIGHT) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* DYNAMIC GRID: 1 CARD (HOME) / 2 CARDS (GYM) / 3 CARDS (NUTRITION) */}
+          <div
+            className={`grid gap-6 ${
+              activeCards.length === 1
+                ? "grid-cols-1 max-w-2xl mx-auto"
+                : activeCards.length === 3
+                ? "grid-cols-1 md:grid-cols-3"
+                : "grid-cols-1 md:grid-cols-2"
+            }`}
+          >
             {activeCards.map((card) => (
               <div
                 key={card.id}
                 onClick={() => setSelectedProgram(card)}
                 className={`group bg-white border-2 rounded-3xl overflow-hidden shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col cursor-pointer ${activeTheme.cardBorder}`}
               >
-                {/* UN-ZOOMED IMAGE FRAME */}
-                <div className="relative h-52 sm:h-60 w-full bg-stone-950 overflow-hidden">
+                {/* MOBILE UNTOUCHED | DESKTOP: UN-ZOOMED FOR MEN PORTRAITS */}
+                <div
+                  className={`relative h-56 sm:h-64 w-full bg-stone-950 overflow-hidden ${
+                    isMen && !card.isFood
+                      ? "lg:h-[400px] xl:h-[440px]"
+                      : "lg:h-80 xl:h-96"
+                  }`}
+                >
                   <Image
                     src={card.image}
                     alt=""
                     fill
                     aria-hidden
-                    className="object-cover blur-xl opacity-35 scale-110 pointer-events-none"
+                    className={`object-cover blur-xl opacity-35 scale-110 pointer-events-none ${
+                      isMen && !card.isFood
+                        ? "lg:opacity-45 lg:blur-2xl"
+                        : "lg:hidden"
+                    }`}
                   />
                   <Image
                     src={card.image}
                     alt={card.title}
                     fill
-                    className="object-contain p-1.5 transition-transform duration-500 group-hover:scale-[1.03]"
+                    className={`object-contain p-1.5 lg:p-0 transition-transform duration-700 ${
+                      isMen && !card.isFood
+                        ? "lg:object-contain group-hover:scale-[1.03]"
+                        : `lg:object-cover group-hover:scale-105 ${
+                            card.isFood ? "lg:object-center" : "lg:object-top"
+                          }`
+                    }`}
                   />
 
                   <span
@@ -630,7 +660,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* COMPACT CARD BODY SO ENTIRE CARD FITS CLEANLY ON SCREEN */}
+                {/* CARD BODY */}
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
                     <p
@@ -698,61 +728,158 @@ export default function Home() {
         </ScrollReveal>
       </section>
 
-      {/* 4. COMPLETE TRANSFORMATION PACKAGE */}
+      {/* 4. COMPLETE TRANSFORMATION PACKAGE (WITH MEN / WOMEN SWITCHER + DUAL FOOD & PHYSIQUE VISUAL) */}
       <ScrollReveal>
         <section className="py-20 bg-stone-950 text-white relative overflow-hidden">
-          <div className="absolute -left-24 bottom-0 w-72 h-72 bg-red-800/25 blur-[120px] rounded-full pointer-events-none" />
+          <div
+            className={`absolute -left-24 bottom-0 w-80 h-80 blur-[130px] rounded-full pointer-events-none transition-colors duration-700 ${
+              isBundleMen ? "bg-blue-600/20" : "bg-pink-500/20"
+            }`}
+          />
+
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+            {/* LEFT SIDE: TITLE, MEN/WOMEN TOGGLE & DUAL VISUAL (FOOD + MEN/WOMEN) */}
             <div className="lg:col-span-6 space-y-5">
               <span className="inline-block px-3 py-1 rounded-md border border-red-800/70 text-red-500 text-[10px] font-black uppercase tracking-widest">
                 Training + Nutrition Package
               </span>
+
               <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.95]">
                 Complete <br />
-                <span className="text-red-500">Transformation</span>
+                <span className={isBundleMen ? "text-blue-500" : "text-pink-400"}>
+                  Transformation
+                </span>
               </h2>
+
               <p className="text-stone-400 text-sm sm:text-base max-w-md">
-                Combine your Gym or Home workout split with a Bulking or Cutting
-                nutrition blueprint, plus full Vault access to exercise videos
-                and high-protein recipes.
+                Choose the Men&apos;s or Women&apos;s complete system: structured
+                Gym or Home workouts paired with your Bulking, Cutting, or Vegan
+                nutrition blueprint.
               </p>
 
-              <div className="relative h-44 w-full max-w-md rounded-2xl overflow-hidden border border-stone-800">
-                <Image
-                  src="/images/nutrition3.jpg"
-                  alt="Evolution Body Nutrition & Training"
-                  fill
-                  className="object-cover opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/75 via-transparent to-transparent" />
-                <span className="absolute bottom-3 left-3 text-[10px] font-black uppercase tracking-widest text-white">
-                  Precision Fuel + Structured Training
-                </span>
+              {/* MEN / WOMEN SWITCHER FOR COMPLETE TRANSFORMATION */}
+              <div className="inline-grid grid-cols-2 gap-1.5 p-1.5 bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-xs">
+                <button
+                  onClick={() => setBundleGender("men")}
+                  className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    isBundleMen
+                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30"
+                      : "text-stone-400 hover:text-white"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isBundleMen ? "bg-white animate-pulse" : "bg-blue-500"
+                    }`}
+                  />
+                  For Men
+                </button>
+                <button
+                  onClick={() => setBundleGender("women")}
+                  className={`py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    !isBundleMen
+                      ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30"
+                      : "text-stone-400 hover:text-white"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      !isBundleMen ? "bg-white animate-pulse" : "bg-pink-500"
+                    }`}
+                  />
+                  For Women
+                </button>
+              </div>
+
+              {/* DUAL VISUAL: FOOD + MEN/WOMEN TRANSFORMATION PHOTO */}
+              <div className="grid grid-cols-2 gap-3 max-w-lg pt-1">
+                <div className="relative h-48 sm:h-56 rounded-2xl overflow-hidden border border-stone-800 group">
+                  <Image
+                    src="/images/nutrition3.jpg"
+                    alt="Nutrition Plan Fuel"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent" />
+                  <span className="absolute bottom-2.5 left-2.5 bg-emerald-600/95 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
+                    Nutrition
+                  </span>
+                </div>
+
+                <div
+                  className={`relative h-48 sm:h-56 rounded-2xl overflow-hidden border-2 group transition-colors duration-300 ${
+                    isBundleMen ? "border-blue-500/70" : "border-pink-500/70"
+                  }`}
+                >
+                  <Image
+                    src={
+                      isBundleMen
+                        ? "/images/complete-transformation-men.jpg"
+                        : "/images/complete-transformation-women.jpg"
+                    }
+                    alt={
+                      isBundleMen
+                        ? "Complete Transformation For Men"
+                        : "Complete Transformation For Women"
+                    }
+                    fill
+                    className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent" />
+                  <span
+                    className={`absolute bottom-2.5 left-2.5 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${
+                      isBundleMen ? "bg-blue-600/95" : "bg-pink-500/95"
+                    }`}
+                  >
+                    {isBundleMen ? "For Men" : "For Women"}
+                  </span>
+                </div>
               </div>
             </div>
 
+            {/* RIGHT SIDE: PACKAGE DETAILS & BUY CARD */}
             <div className="lg:col-span-6 bg-white text-stone-950 rounded-3xl p-6 sm:p-9 shadow-2xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-4">
-                Included in the Package
-              </p>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                  Included in the Package
+                </p>
+                <span
+                  className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-white ${
+                    isBundleMen ? "bg-blue-600" : "bg-pink-500"
+                  }`}
+                >
+                  {isBundleMen ? "Men's Edition" : "Women's Edition"}
+                </span>
+              </div>
+
               <div className="divide-y divide-stone-200 mb-6">
                 <div className="py-3.5 flex items-start gap-4">
-                  <span className="text-xs font-black text-red-800 mt-0.5">01</span>
+                  <span
+                    className={`text-xs font-black mt-0.5 ${
+                      isBundleMen ? "text-blue-600" : "text-pink-600"
+                    }`}
+                  >
+                    01
+                  </span>
                   <div>
-                    <h4 className="font-black uppercase text-sm">Training Plan</h4>
+                    <h4 className="font-black uppercase text-sm">
+                      {isBundleMen ? "Men's Training Plan" : "Women's Training Plan"}
+                    </h4>
                     <p className="text-xs text-stone-500">
-                      Men or Women • Gym or Home Workout
+                      Gym or Home Workout Blueprint tailored to your level
                     </p>
                   </div>
                 </div>
                 <div className="py-3.5 flex items-start gap-4">
-                  <span className="text-xs font-black text-red-800 mt-0.5">02</span>
+                  <span className="text-xs font-black text-emerald-600 mt-0.5">
+                    02
+                  </span>
                   <div>
                     <h4 className="font-black uppercase text-sm">
                       Nutrition Plan + Vault Access
                     </h4>
                     <p className="text-xs text-stone-500">
-                      Bulking or Cutting + Exercise Videos &amp; Healthy Recipes
+                      Bulking, Cutting, or Vegan + Exercise Videos &amp; Recipes
                     </p>
                   </div>
                 </div>
@@ -760,7 +887,7 @@ export default function Home() {
 
               <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">
-                  Complete Package
+                  Complete Package ({isBundleMen ? "Men" : "Women"})
                 </p>
                 <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
                   <span className="text-xs sm:text-sm text-stone-400 line-through font-bold">
@@ -775,16 +902,22 @@ export default function Home() {
               <button
                 onClick={() =>
                   addToCart({
-                    id: "combo-bundle",
-                    name: "Complete Transformation Package (Training + Nutrition)",
+                    id: isBundleMen ? "combo-bundle-men" : "combo-bundle-women",
+                    name: `Complete Transformation Package (${isBundleMen ? "For Men" : "For Women"})`,
                     price: 24,
                     quantity: 1,
-                    image: "/images/nutrition3.jpg",
+                    image: isBundleMen
+                      ? "/images/complete-transformation-men.jpg"
+                      : "/images/complete-transformation-women.jpg",
                   })
                 }
-                className="w-full bg-stone-950 hover:bg-red-800 text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all flex items-center justify-between px-6 cursor-pointer active:scale-[0.98]"
+                className={`w-full text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all flex items-center justify-between px-6 cursor-pointer active:scale-[0.98] ${
+                  isBundleMen
+                    ? "bg-stone-950 hover:bg-blue-600"
+                    : "bg-stone-950 hover:bg-pink-500"
+                }`}
               >
-                <span>Get the Package</span>
+                <span>Get {isBundleMen ? "Men's" : "Women's"} Package</span>
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -848,7 +981,7 @@ export default function Home() {
               <X size={18} />
             </button>
 
-            <div className="relative h-56 w-full bg-stone-950 flex-shrink-0 overflow-hidden">
+            <div className="relative h-56 sm:h-64 w-full bg-stone-950 flex-shrink-0 overflow-hidden">
               <Image
                 src={selectedProgram.image}
                 alt=""
@@ -941,7 +1074,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* MODAL 2: TRANSFORMATION FULLSCREEN LIGHTBOX (CLEAN PHOTO ONLY) */}
+      {/* MODAL 2: TRANSFORMATION FULLSCREEN LIGHTBOX */}
       {lightboxImage && (
         <div
           className="fixed inset-0 z-50 bg-stone-950/92 backdrop-blur-md flex items-center justify-center p-4"
@@ -961,7 +1094,7 @@ export default function Home() {
           >
             <Image
               src={lightboxImage}
-              alt="Client Transformation Full View"
+              alt="Transformation Full View"
               fill
               className="object-contain"
             />

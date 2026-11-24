@@ -154,6 +154,22 @@ const MEMBER_RECIPES = [
     fats: "18g",
     steps: "Brown 200g lean ground beef with garlic and soy sauce, fold in 220g cooked jasmine rice and peppers.",
   },
+  {
+    id: "nutrition-vegan",
+    altIds: ["men-nutrition-vegan", "women-nutrition-vegan"],
+    name: "Vegan Nutrition Plan",
+    description: "Plant-Based Performance Guide",
+    image: "/images/nutrition3.jpg",
+    downloadPath: "/downloads/vegan-plan.pdf",
+  },
+  {
+    id: "combo-bundle",
+    altIds: ["combo-bundle-men", "combo-bundle-women"],
+    name: "Complete Transformation Package",
+    description: "Training + Nutrition Bundle",
+    image: "/images/complete-transformation-men.jpg",
+    downloadPath: "/downloads/combo-bundle.pdf",
+  },
 ];
 
 type ProgramStatus = {

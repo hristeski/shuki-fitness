@@ -57,7 +57,7 @@ export default function InstagramPopup() {
             </h4>
             <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-3 md:mb-4 leading-none">
               Claim Your <br className="hidden md:block" />
-              <span className="text-red-600">20% OFF</span>
+              <span className="text-red-600">30% OFF</span>
             </h3>
             
             <p className="text-zinc-400 text-sm md:text-base mb-8 leading-relaxed">
