@@ -58,7 +58,7 @@ export default function DiscountBadge() {
             className="text-zinc-400 group-hover:text-white font-black uppercase tracking-[0.25em] text-[10px] md:text-xs transition-colors"
             style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
           >
-            Claim <span className="text-red-600 group-hover:text-white transition-colors">20%</span>
+            Claim <span className="text-red-600 group-hover:text-white transition-colors">30%</span>
           </span>
 
         </Link>
