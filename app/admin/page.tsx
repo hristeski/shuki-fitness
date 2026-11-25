@@ -3,7 +3,6 @@
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../utils/supabase";
 import {
   RefreshCw,
   Search,
@@ -14,21 +13,22 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+const ADMIN_EMAILS = ["getsurefixedgames@gmail.com", "smootyefects@gmail.com"];
+
 export default function AdminPanel() {
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "completed" | "revoked">("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const adminEmails = ["getsurefixedgames@gmail.com", "smootyefects@gmail.com"];
 
   useEffect(() => {
     if (isLoaded) {
       const userEmail = user?.primaryEmailAddress?.emailAddress;
-      if (!isSignedIn || !adminEmails.includes(userEmail || "")) {
+      if (!isSignedIn || !ADMIN_EMAILS.includes(userEmail || "")) {
         router.push("/");
       } else {
         fetchOrders();
@@ -38,67 +38,55 @@ export default function AdminPanel() {
 
   async function fetchOrders() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error && data) setOrders(data);
-    setLoading(false);
-  }
-
-  async function approveOrder(order: any) {
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 3);
-
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "completed", expires_at: expiresAt.toISOString() })
-      .eq("id", order.id);
-
-    if (!error) {
-      setOrders(
-        orders.map((o: any) =>
-          o.id === order.id
-            ? { ...o, status: "completed", expires_at: expiresAt.toISOString() }
-            : o
-        )
-      );
-
-      try {
-        await fetch("/api/send-approval-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userEmail: order.user_email, items: order.items }),
-        });
-      } catch (err) {
-        console.error("Email error:", err);
-      }
-    } else {
-      alert("Error approving order: " + error.message);
+    try {
+      const res = await fetch("/api/admin/orders");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to load orders");
+      setOrders(json.orders || []);
+    } catch (err: any) {
+      console.error("Admin fetch error:", err?.message || err);
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function revokeOrder(orderId: string) {
-    if (!window.confirm("Revoke access for this user?")) return;
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "revoked", expires_at: null })
-      .eq("id", orderId);
+  async function updateOrderStatus(orderId: string, action: "approve" | "revoke") {
+    if (action === "revoke" && !window.confirm("Revoke access for this user?")) return;
+    setBusyId(orderId);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, action }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Action failed");
 
-    if (!error) {
-      setOrders(
-        orders.map((o: any) =>
-          o.id === orderId ? { ...o, status: "revoked", expires_at: null } : o
-        )
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? json.order : o))
       );
+    } catch (err: any) {
+      alert(err?.message || "Error updating order");
+    } finally {
+      setBusyId(null);
     }
   }
 
   async function deleteOrder(orderId: string) {
     if (!window.confirm("Permanently delete this order from the database?")) return;
-    const { error } = await supabase.from("orders").delete().eq("id", orderId);
-    if (!error) setOrders(orders.filter((o: any) => o.id !== orderId));
+    setBusyId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders?id=${encodeURIComponent(orderId)}`, {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Delete failed");
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    } catch (err: any) {
+      alert(err?.message || "Error deleting order");
+    } finally {
+      setBusyId(null);
+    }
   }
 
   function isExpired(expiresAt: string | null): boolean {
@@ -145,7 +133,6 @@ export default function AdminPanel() {
   return (
     <main className="min-h-screen bg-evo-surface text-stone-950 py-10 md:py-14 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-6 mb-8">
           <div>
             <p className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-800 mb-1">
@@ -167,7 +154,6 @@ export default function AdminPanel() {
           </button>
         </div>
 
-        {/* FILTER & SEARCH BAR */}
         <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between shadow-sm">
           <div className="flex w-full lg:w-auto overflow-x-auto gap-1.5">
             {[
@@ -202,10 +188,11 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* ORDERS LIST */}
         <div className="space-y-4">
           {filteredOrders.map((order) => {
             const expired = isExpired(order.expires_at);
+            const isBusy = busyId === order.id;
+
             return (
               <div
                 key={order.id}
@@ -270,28 +257,30 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* ACTION BUTTONS */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {order.status !== "completed" ? (
+                  {order.status !== "completed" || expired ? (
                     <button
-                      onClick={() => approveOrder(order)}
-                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all cursor-pointer"
+                      disabled={isBusy}
+                      onClick={() => updateOrderStatus(order.id, "approve")}
+                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all cursor-pointer"
                     >
-                      <Check size={15} /> Approve
+                      <Check size={15} /> {expired ? "Renew" : "Approve"}
                     </button>
                   ) : (
                     <button
-                      onClick={() => revokeOrder(order.id)}
-                      className="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-red-800 text-stone-700 hover:text-white text-xs font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer"
+                      disabled={isBusy}
+                      onClick={() => updateOrderStatus(order.id, "revoke")}
+                      className="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-red-800 disabled:opacity-50 text-stone-700 hover:text-white text-xs font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer"
                     >
                       <Ban size={14} /> Revoke
                     </button>
                   )}
 
                   <button
+                    disabled={isBusy}
                     onClick={() => deleteOrder(order.id)}
                     title="Delete order"
-                    className="w-10 h-10 rounded-xl bg-stone-100 hover:bg-red-100 text-stone-500 hover:text-red-700 flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-10 h-10 rounded-xl bg-stone-100 hover:bg-red-100 disabled:opacity-50 text-stone-500 hover:text-red-700 flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Trash2 size={16} />
                   </button>

@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "../../utils/supabase";
 import { useCurrency } from "@/app/context/CurrencyContext";
 import { WORKOUT_DAYS, NUTRITION_PLANS_DATA } from "../data/vaultContent";
 import {
@@ -148,11 +147,9 @@ function DashboardContent() {
   const [ordersHistory, setOrdersHistory] = useState<any[]>([]);
   const [isLoadingDB, setIsLoadingDB] = useState(true);
 
-  // Interactive Workout Tracker State
   const [selectedDayIdx, setSelectedDayIdx] = useState(0);
   const [checkedExercises, setCheckedExercises] = useState<Record<string, boolean>>({});
 
-  // Interactive Nutrition Swapper State
   const [nutritionMode, setNutritionMode] = useState<"cutting" | "bulking" | "vegan">("cutting");
   const [mealSwapIndex, setMealSwapIndex] = useState<Record<string, number>>({});
 
@@ -167,7 +164,6 @@ function DashboardContent() {
     if (isLoaded && !isSignedIn) router.push("/");
   }, [isLoaded, isSignedIn, router]);
 
-  // Load saved exercise checkboxes per user
   useEffect(() => {
     if (!user) return;
     const saved = localStorage.getItem(`evo_checked_${user.id}`);
@@ -198,39 +194,38 @@ function DashboardContent() {
     async function fetchOrders() {
       if (!user) return;
       try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+        const res = await fetch("/api/orders");
+        const json = await res.json();
 
-        if (error) throw error;
-        if (data) {
-          setOrdersHistory(data);
-          const statuses: Record<string, ProgramStatus> = {};
+        if (!res.ok) {
+          throw new Error(json.error || "Failed to load orders");
+        }
 
-          for (const order of data) {
-            const itemsArray =
-              typeof order.items === "string" ? JSON.parse(order.items) : order.items || [];
+        const data = json.orders || [];
+        setOrdersHistory(data);
+        const statuses: Record<string, ProgramStatus> = {};
 
-            for (const program of ALL_PROGRAMS) {
-              const hasProgram = itemsArray.some(
-                (item: any) => item.id === program.id || program.altIds.includes(item.id)
-              );
-              if (!hasProgram) continue;
+        for (const order of data) {
+          const itemsArray =
+            typeof order.items === "string" ? JSON.parse(order.items) : order.items || [];
 
-              const existing = statuses[program.id];
-              if (order.status === "completed" && existing?.status !== "completed") {
-                statuses[program.id] = { status: "completed", expiresAt: order.expires_at || null };
-              } else if (!existing) {
-                statuses[program.id] = { status: order.status, expiresAt: order.expires_at || null };
-              }
+          for (const program of ALL_PROGRAMS) {
+            const hasProgram = itemsArray.some(
+              (item: any) => item.id === program.id || program.altIds.includes(item.id)
+            );
+            if (!hasProgram) continue;
+
+            const existing = statuses[program.id];
+            if (order.status === "completed" && existing?.status !== "completed") {
+              statuses[program.id] = { status: "completed", expiresAt: order.expires_at || null };
+            } else if (!existing) {
+              statuses[program.id] = { status: order.status, expiresAt: order.expires_at || null };
             }
           }
-          setProgramStatuses(statuses);
         }
-      } catch (err) {
-        console.error("Error fetching orders:", err);
+        setProgramStatuses(statuses);
+      } catch (err: any) {
+        console.error("Error fetching orders:", err?.message || err);
       } finally {
         setIsLoadingDB(false);
       }
@@ -280,12 +275,10 @@ function DashboardContent() {
 
   const pendingOrders = ordersHistory.filter((o) => o.status.startsWith("pending_"));
 
-  // Current workout day calculations
   const currentDay = WORKOUT_DAYS[selectedDayIdx];
   const dayCompletedCount = currentDay.exercises.filter((ex) => checkedExercises[ex.id]).length;
   const dayProgressPercent = Math.round((dayCompletedCount / currentDay.exercises.length) * 100);
 
-  // Dynamic daily nutrition macro totals based on swapped meals
   const activeMealSlots = NUTRITION_PLANS_DATA[nutritionMode];
   const dailyTotals = activeMealSlots.reduce(
     (acc, slot) => {
@@ -384,13 +377,10 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* TAB 1: PROGRAMS (DAYS, CHECKBOXES, VIDEOS & PDF DOWNLOAD)    */}
-        {/* ============================================================ */}
+        {/* TAB 1: PROGRAMS */}
         {activeTab === "programs" &&
           (hasTrainingAccess ? (
             <div className="space-y-8">
-              {/* DOWNLOADABLE PDF CARDS */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {(ownedPrograms.length > 0 ? ownedPrograms : ALL_PROGRAMS.slice(0, 1)).map(
                   (program) => {
@@ -446,7 +436,6 @@ function DashboardContent() {
                     </p>
                   </div>
 
-                  {/* DAY SELECTOR BUTTONS */}
                   <div className="flex flex-wrap gap-1.5 bg-stone-100 p-1.5 rounded-2xl border border-stone-200">
                     {WORKOUT_DAYS.map((d, idx) => (
                       <button
@@ -464,7 +453,6 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {/* PROGRESS BAR */}
                 <div className="mb-6">
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-wider mb-2">
                     <span className="text-stone-500">Today&apos;s Completion</span>
@@ -480,7 +468,6 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {/* EXERCISES LIST WITH CHECKBOXES + VIDEO WATCH/DOWNLOAD */}
                 <div className="space-y-3">
                   {currentDay.exercises.map((ex) => {
                     const isDone = !!checkedExercises[ex.id];
@@ -534,7 +521,6 @@ function DashboardContent() {
                           </div>
                         </button>
 
-                        {/* VIDEO WATCH / DOWNLOAD ACTIONS */}
                         <div className="flex items-center gap-2 pl-9 sm:pl-0 flex-shrink-0">
                           <a
                             href={ex.videoUrl}
@@ -577,13 +563,10 @@ function DashboardContent() {
             </div>
           ))}
 
-        {/* ============================================================ */}
-        {/* TAB 2: NUTRITION (DAILY MACROS + MEAL SWAP + PDF DOWNLOAD)   */}
-        {/* ============================================================ */}
+        {/* TAB 2: NUTRITION */}
         {activeTab === "nutrition" &&
           (hasNutritionAccess ? (
             <div className="space-y-6">
-              {/* TOP MODE SWITCHER + DOWNLOAD PDF */}
               <div className="bg-white border border-stone-200 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
                   {(["cutting", "bulking", "vegan"] as const).map((mode) => (
@@ -610,7 +593,6 @@ function DashboardContent() {
                 </a>
               </div>
 
-              {/* LIVE DAILY INTAKE SUMMARY (UPDATES WHEN MEALS ARE SWAPPED!) */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {[
                   { label: "Daily Calories", value: `${dailyTotals.kcal} kcal`, accent: "text-red-800", icon: Flame },
@@ -632,7 +614,6 @@ function DashboardContent() {
                 ))}
               </div>
 
-              {/* MEAL CARDS WITH SWAP BUTTON */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {activeMealSlots.map((slot) => {
                   const currentIdx = mealSwapIndex[slot.id] || 0;
@@ -704,9 +685,7 @@ function DashboardContent() {
             </div>
           ))}
 
-        {/* ============================================================ */}
-        {/* TAB 3: 1-ON-1 COACHING DIRECT ACCESS                         */}
-        {/* ============================================================ */}
+        {/* TAB 3: 1-ON-1 COACHING */}
         {activeTab === "coaching" && (
           <div className="bg-stone-950 text-white rounded-3xl p-8 sm:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4">
@@ -741,9 +720,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* TAB 4: PROFILE & ORDER HISTORY                               */}
-        {/* ============================================================ */}
+        {/* TAB 4: PROFILE & ORDER HISTORY */}
         {activeTab === "profile" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white border border-stone-200 rounded-3xl p-6 shadow-sm">

@@ -5,14 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useUser, SignInButton, UserButton, SignOutButton } from "@clerk/nextjs";
-import { supabase } from "../../utils/supabase";
 import LanguageDropdown from "./LanguageDropdown";
-import { Utensils } from "lucide-react";
 import {
   Home,
   Dumbbell,
   Sparkles,
-  PlayCircle,
+  Utensils,
   User,
   ShoppingBag,
   Menu,
@@ -51,18 +49,21 @@ export default function Navbar() {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("orders")
-        .select("status, expires_at")
-        .eq("user_id", user.id)
-        .eq("status", "completed");
+      try {
+        const res = await fetch("/api/orders");
+        if (!res.ok) return;
+        const json = await res.json();
+        const orders = json.orders || [];
 
-      if (!error && data) {
         const now = new Date();
-        const active = data.some(
-          (order: any) => !order.expires_at || new Date(order.expires_at) >= now
+        const active = orders.some(
+          (order: any) =>
+            order.status === "completed" &&
+            (!order.expires_at || new Date(order.expires_at) >= now)
         );
         setHasActiveSub(active);
+      } catch {
+        setHasActiveSub(false);
       }
     }
 
@@ -83,7 +84,7 @@ export default function Navbar() {
             <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter uppercase text-stone-950">
               EVOLUTION
               <span className="ml-2 text-red-800 group-hover:text-red-700 transition-colors">
-                 BODY
+                BODY
               </span>
             </span>
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-stone-400 mt-0.5">
@@ -127,12 +128,12 @@ export default function Navbar() {
               </Link>
             )}
 
-            {isSignedIn && !isAdmin && (
+            {isSignedIn && (
               <Link
                 href="/dashboard"
                 className="hidden md:inline-flex items-center gap-1.5 bg-red-800 text-white px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm active:scale-95"
               >
-                My Profile
+                My Vault
                 <ArrowUpRight size={14} />
               </Link>
             )}
@@ -231,7 +232,6 @@ export default function Navbar() {
           </div>
         </nav>
       )}
-      
 
       {/* MOBILE DRAWER */}
       <div
@@ -253,7 +253,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between p-5 border-b border-stone-100">
           <div className="flex flex-col leading-none">
             <span className="text-lg font-black uppercase tracking-tighter text-stone-950">
-              EVOLUTION<span className="text-red-800">BODY</span>
+              EVOLUTION <span className="text-red-800">BODY</span>
             </span>
             <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mt-0.5">
               by Andrej Angjeleski
@@ -270,13 +270,27 @@ export default function Navbar() {
         <div className="flex-1 overflow-y-auto p-5 space-y-2">
           {isSignedIn && (
             <Link
-              href={isAdmin ? "/admin" : "/dashboard"}
+              href="/dashboard"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center justify-between p-4 rounded-2xl font-black uppercase text-xs tracking-wider bg-red-800 text-white mb-4 shadow-md shadow-red-900/20"
+              className="flex items-center justify-between p-4 rounded-2xl font-black uppercase text-xs tracking-wider bg-red-800 text-white mb-2 shadow-md shadow-red-900/20"
             >
               <span className="flex items-center gap-2.5">
                 <User size={16} />
-                {isAdmin ? "Admin Panel" : "My Profile & Vault"}
+                My Profile &amp; Vault
+              </span>
+              <ArrowUpRight size={16} />
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between p-4 rounded-2xl font-black uppercase text-xs tracking-wider bg-stone-950 text-white mb-4"
+            >
+              <span className="flex items-center gap-2.5">
+                <ShieldCheck size={16} />
+                Admin Panel
               </span>
               <ArrowUpRight size={16} />
             </Link>

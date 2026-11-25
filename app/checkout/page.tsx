@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { supabase } from "../../utils/supabase";
 import { useCurrency } from "@/app/context/CurrencyContext";
 import {
   CreditCard,
@@ -41,6 +40,7 @@ export default function CheckoutPage() {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [duplicateItems, setDuplicateItems] = useState<string[]>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
 
@@ -56,23 +56,32 @@ export default function CheckoutPage() {
 
     async function checkDuplicates() {
       setCheckingDuplicates(true);
-      const { data, error } = await supabase
-        .from("orders")
-        .select("items, status")
-        .eq("user_id", user!.id)
-        .in("status", ["pending_bank", "pending_crypto", "pending_card", "completed"]);
+      try {
+        const res = await fetch("/api/orders");
+        if (!res.ok) return;
+        const json = await res.json();
+        const data = json.orders || [];
 
-      if (!error && data) {
         const boughtIds = new Set<string>();
-        data.forEach((order: any) => {
-          order.items?.forEach((item: any) => boughtIds.add(item.id));
-        });
+        data
+          .filter((o: any) =>
+            ["pending_bank", "pending_crypto", "pending_card", "completed"].includes(o.status)
+          )
+          .forEach((order: any) => {
+            const parsed =
+              typeof order.items === "string" ? JSON.parse(order.items) : order.items || [];
+            parsed.forEach((item: any) => boughtIds.add(item.id));
+          });
+
         const dupes = cartItems
           .filter((item) => boughtIds.has(item.id))
           .map((item) => item.name);
         setDuplicateItems(dupes);
+      } catch (err) {
+        console.error("Duplicate check error:", err);
+      } finally {
+        setCheckingDuplicates(false);
       }
-      setCheckingDuplicates(false);
     }
 
     checkDuplicates();
@@ -88,58 +97,50 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     if (!user) return;
+
     if (duplicateItems.length > 0) {
-      alert(`You already own: ${duplicateItems.join(", ")}.`);
+      setErrorMessage(`You already own: ${duplicateItems.join(", ")}.`);
       return;
     }
 
-    // Ако е избрана картичка, тука ќе се поврзе Stripe / CaSys API endpoint
     if (selectedMethod === "card") {
-      alert(
-        "Automatic Card Payment (Stripe / CaSys) will be activated once your merchant account keys are connected. Please use Bank Transfer or Crypto for now."
+      setErrorMessage(
+        "Automatic Card Payment (Stripe / CaSys) will be activated once merchant keys are connected. Please select Bank Transfer or Crypto for now."
       );
       return;
     }
 
     if (!proofFile) {
-      alert("Please upload your payment receipt / transfer screenshot.");
+      setErrorMessage("Please upload your payment receipt / transfer screenshot.");
       return;
     }
 
     setIsProcessing(true);
     try {
-      const fileExt = proofFile.name.split(".").pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const formData = new FormData();
+      formData.append("file", proofFile);
+      formData.append("items", JSON.stringify(cartItems));
+      formData.append("totalPrice", String(totalPrice));
+      formData.append("paymentMethod", selectedMethod);
+      if (appliedPromoCode) formData.append("promoCode", appliedPromoCode);
 
-      const { error: uploadError } = await supabase.storage
-        .from("receipts")
-        .upload(fileName, proofFile);
-      if (uploadError) throw new Error("Failed to upload receipt.");
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        body: formData,
+      });
 
-      const { data: publicUrlData } = supabase.storage
-        .from("receipts")
-        .getPublicUrl(fileName);
-
-      const { error: dbError } = await supabase.from("orders").insert([
-        {
-          user_id: user.id,
-          user_email: user.primaryEmailAddress?.emailAddress || "no-email@clerk.com",
-          total_price: totalPrice,
-          items: cartItems,
-          status: `pending_${selectedMethod}`,
-          proof_url: publicUrlData.publicUrl,
-          promo_code: appliedPromoCode || null,
-        },
-      ]);
-
-      if (dbError) throw dbError;
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to submit order.");
+      }
 
       cartItems.forEach((item) => removeFromCart(item.id));
       setOrderSuccess(true);
-    } catch (error) {
-      console.error("Order error:", error);
-      alert("Something went wrong submitting your order. Please try again.");
+    } catch (error: any) {
+      console.error("Order error:", error?.message || error);
+      setErrorMessage(error?.message || "Something went wrong submitting your order.");
     } finally {
       setIsProcessing(false);
     }
@@ -221,7 +222,6 @@ export default function CheckoutPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT: PAYMENT FORM */}
           <div className="lg:col-span-7 bg-white border border-stone-200 rounded-3xl p-6 sm:p-9 shadow-sm">
             <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-1">
               Secure <span className="text-red-800">Checkout</span>
@@ -231,7 +231,6 @@ export default function CheckoutPage() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* STEP 1: PAYMENT METHOD */}
               <div>
                 <p className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-3">
                   1. Select Payment Method
@@ -244,7 +243,10 @@ export default function CheckoutPage() {
                       <button
                         key={opt.id}
                         type="button"
-                        onClick={() => setSelectedMethod(opt.id)}
+                        onClick={() => {
+                          setSelectedMethod(opt.id);
+                          setErrorMessage("");
+                        }}
                         className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col gap-2 ${
                           active
                             ? "border-red-800 bg-red-50/50 shadow-sm"
@@ -262,7 +264,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* PAYMENT INSTRUCTIONS BOX */}
               <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-2.5 text-xs">
                 {selectedMethod === "card" && (
                   <div className="space-y-2">
@@ -303,7 +304,6 @@ export default function CheckoutPage() {
                 )}
               </div>
 
-              {/* STEP 2: UPLOAD RECEIPT (FOR BANK & CRYPTO) */}
               {selectedMethod !== "card" && (
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-3">
@@ -320,17 +320,27 @@ export default function CheckoutPage() {
                       size={22}
                       className={proofFile ? "text-emerald-600 mb-2" : "text-stone-400 mb-2"}
                     />
-                    <p className="text-xs font-black uppercase text-stone-700">
+                    <p className="text-xs font-black uppercase text-stone-700 px-4 text-center">
                       {proofFile ? proofFile.name : "Click to upload receipt (PNG, JPG, PDF)"}
                     </p>
                     <input
                       type="file"
                       accept="image/*,.pdf"
-                      onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        setProofFile(e.target.files?.[0] || null);
+                        setErrorMessage("");
+                      }}
                       className="hidden"
                       required
                     />
                   </label>
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-800 text-xs font-bold rounded-xl p-3.5">
+                  <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
                 </div>
               )}
 
@@ -344,7 +354,7 @@ export default function CheckoutPage() {
                 }`}
               >
                 {isProcessing
-                  ? "Processing..."
+                  ? "Uploading & Submitting..."
                   : selectedMethod === "card"
                   ? `Pay ${convert(totalPrice)} by Card`
                   : "Submit Order & Proof"}
@@ -352,7 +362,6 @@ export default function CheckoutPage() {
             </form>
           </div>
 
-          {/* RIGHT: ORDER SUMMARY */}
           <div className="lg:col-span-5 bg-white border border-stone-200 rounded-3xl p-6 sm:p-8 shadow-sm lg:sticky lg:top-24">
             <h2 className="text-sm font-black uppercase tracking-wider pb-4 mb-5 border-b border-stone-100">
               Order Summary
@@ -379,7 +388,6 @@ export default function CheckoutPage() {
               ))}
             </div>
 
-            {/* PROMO CODE */}
             <div className="py-4 border-y border-stone-100 mb-4">
               {!appliedPromoCode ? (
                 <form onSubmit={handlePromoSubmit} className="flex gap-2">
