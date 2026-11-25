@@ -4,11 +4,20 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../utils/supabase";
+import {
+  RefreshCw,
+  Search,
+  Trash2,
+  Eye,
+  Check,
+  Ban,
+  ShieldCheck,
+} from "lucide-react";
 
 export default function AdminPanel() {
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
-  
+
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "completed" | "revoked">("all");
@@ -34,48 +43,10 @@ export default function AdminPanel() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      setOrders(data);
-    }
+    if (!error && data) setOrders(data);
     setLoading(false);
   }
 
-  // СПЕЦИЈАЛНА ФУНКЦИЈА: Праќа мејл на сите веќе одобрени клиенти
-  async function notifyAllPreviousUsers() {
-    if (!window.confirm("⚠️ ДАЛИ СИ СИГУРЕН? Ова ќе испрати е-маил до СИТЕ претходно одобрени клиенти!")) return;
-
-    const completedOrders = orders.filter(o => o.status === "completed" && !isExpired(o.expires_at));
-    
-    if (completedOrders.length === 0) {
-      alert("Нема активни стари клиенти за испраќање.");
-      return;
-    }
-
-    let sentCount = 0;
-    
-    for (const order of completedOrders) {
-      try {
-        await fetch('/api/send-approval-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userEmail: order.user_email, 
-            items: order.items 
-          }),
-        });
-        
-        sentCount++;
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-      } catch (err) {
-        console.error(`Грешка при праќање до ${order.user_email}:`, err);
-      }
-    }
-
-    alert(`✅ УСПЕШНО! Испратени се ${sentCount} е-маилови до старите клиенти.`);
-  }
-
-  // ФУНКЦИЈАТА ЗА ОДОБРУВАЊЕ СО ИСПРАЌАЊЕ МЕЈЛ
   async function approveOrder(order: any) {
     const expiresAt = new Date();
     expiresAt.setMonth(expiresAt.getMonth() + 3);
@@ -86,60 +57,48 @@ export default function AdminPanel() {
       .eq("id", order.id);
 
     if (!error) {
-      setOrders(orders.map((o: any) =>
-        o.id === order.id
-          ? { ...o, status: "completed", expires_at: expiresAt.toISOString() }
-          : o
-      ));
+      setOrders(
+        orders.map((o: any) =>
+          o.id === order.id
+            ? { ...o, status: "completed", expires_at: expiresAt.toISOString() }
+            : o
+        )
+      );
 
       try {
-        await fetch('/api/send-approval-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            userEmail: order.user_email, 
-            items: order.items 
-          }),
+        await fetch("/api/send-approval-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userEmail: order.user_email, items: order.items }),
         });
-      } catch (emailError) {
-        console.error("Грешка при праќање е-маил:", emailError);
+      } catch (err) {
+        console.error("Email error:", err);
       }
-
     } else {
-      alert("Грешка при одобрување: " + error.message);
+      alert("Error approving order: " + error.message);
     }
   }
 
   async function revokeOrder(orderId: string) {
+    if (!window.confirm("Revoke access for this user?")) return;
     const { error } = await supabase
       .from("orders")
       .update({ status: "revoked", expires_at: null })
       .eq("id", orderId);
 
     if (!error) {
-      setOrders(orders.map((o: any) =>
-        o.id === orderId
-          ? { ...o, status: "revoked", expires_at: null }
-          : o
-      ));
-    } else {
-      alert("Грешка при одземање: " + error.message);
+      setOrders(
+        orders.map((o: any) =>
+          o.id === orderId ? { ...o, status: "revoked", expires_at: null } : o
+        )
+      );
     }
   }
 
   async function deleteOrder(orderId: string) {
-    if (!window.confirm("Are you sure? This will permanently delete the order from the database.")) return;
-    
-    const { error } = await supabase
-      .from("orders")
-      .delete()
-      .eq("id", orderId);
-
-    if (!error) {
-      setOrders(orders.filter((o: any) => o.id !== orderId));
-    } else {
-      alert("Грешка при бришење: " + error.message);
-    }
+    if (!window.confirm("Permanently delete this order from the database?")) return;
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (!error) setOrders(orders.filter((o: any) => o.id !== orderId));
   }
 
   function isExpired(expiresAt: string | null): boolean {
@@ -150,100 +109,80 @@ export default function AdminPanel() {
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   }
 
-  function getStatusBadge(order: any) {
-    if (order.status === "completed" && isExpired(order.expires_at)) {
-      return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
-    }
-    if (order.status === "completed") return "bg-green-500/10 text-green-500 border border-green-500/20";
-    if (order.status === "revoked") return "bg-red-500/10 text-red-500 border border-red-500/20";
-    return "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20";
-  }
-
-  function getStatusLabel(order: any) {
-    if (order.status === "completed" && isExpired(order.expires_at)) return "expired";
-    if (order.status.startsWith("pending_")) return "Action Required";
-    return order.status;
-  }
-
   function getPaymentMethod(status: string) {
+    if (status.includes("card")) return "Bank Card";
     if (status.includes("bank")) return "Bank Transfer";
-    if (status.includes("binance")) return "Crypto (Binance)";
-    if (status.includes("paypal")) return "PayPal";
-    if (status.includes("skrill")) return "Skrill";
-    if (status.includes("neteller")) return "Neteller";
-    if (status.includes("ria")) return "Ria Transfer";
-    return "Unknown Method";
+    if (status.includes("crypto") || status.includes("binance")) return "Crypto (USDT)";
+    return "Other";
   }
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch = order.user_email?.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
-
     if (filter === "pending") return order.status.startsWith("pending_");
     if (filter === "completed") return order.status === "completed";
-    if (filter === "revoked") return order.status === "revoked" || (order.status === "completed" && isExpired(order.expires_at));
-    
-    return true; 
+    if (filter === "revoked")
+      return order.status === "revoked" || (order.status === "completed" && isExpired(order.expires_at));
+    return true;
   });
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-red-600 font-black uppercase tracking-widest animate-pulse">
-        Accessing Admin Vault...
+      <div className="min-h-screen bg-evo-surface flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-stone-200 border-t-red-800 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white pt-12 md:pt-24 pb-20 px-4 sm:px-8">
+    <main className="min-h-screen bg-evo-surface text-stone-950 py-10 md:py-14 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 border-b border-zinc-900 pb-8 gap-6">
+        {/* HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-stone-200 pb-6 mb-8">
           <div>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-              Admin <span className="text-red-600">Panel</span>
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-800 mb-1">
+              <ShieldCheck size={13} /> Evolution Body Control
+            </p>
+            <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter">
+              Admin <span className="text-red-800">Panel</span>
             </h1>
-            <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs mt-2">
-              Manage {orders.length} total orders
+            <p className="text-xs font-bold text-stone-500 mt-1">
+              Managing {orders.length} total orders
             </p>
           </div>
-          
-          <div className="flex items-center gap-4 self-start md:self-auto">
-            {/* ДОДАДЕНО КОПЧЕ ЗА ИСПРАЌАЊЕ МЕЈЛ НА СТАРИ КОРИСНИЦИ */}
-            <button 
-              onClick={notifyAllPreviousUsers}
-              className="bg-red-900/20 border border-red-900 text-red-500 hover:bg-red-600 hover:text-white p-3 px-6 rounded-xl transition-all shadow-lg font-black uppercase tracking-widest text-[10px]"
-            >
-              Notify Old Users
-            </button>
 
-            <button onClick={fetchOrders} className="bg-zinc-900 hover:bg-zinc-800 text-white p-3 rounded-xl transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
+          <button
+            onClick={fetchOrders}
+            className="inline-flex items-center gap-2 bg-white border border-stone-200 hover:border-red-800 text-stone-800 text-xs font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all cursor-pointer self-start sm:self-auto"
+          >
+            <RefreshCw size={15} /> Refresh
+          </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-4 justify-between items-center mb-8 bg-zinc-950 p-4 border border-zinc-900 rounded-2xl">
-          <div className="flex w-full lg:w-auto overflow-x-auto gap-2 pb-2 lg:pb-0 scrollbar-hide">
+        {/* FILTER & SEARCH BAR */}
+        <div className="bg-white border border-stone-200 rounded-2xl p-4 mb-6 flex flex-col lg:flex-row gap-4 items-center justify-between shadow-sm">
+          <div className="flex w-full lg:w-auto overflow-x-auto gap-1.5">
             {[
-              { id: "all", label: "All Orders" },
-              { id: "pending", label: "Pending (Action Req.)" },
+              { id: "all", label: "All" },
+              { id: "pending", label: "Pending" },
               { id: "completed", label: "Completed" },
-              { id: "revoked", label: "Revoked / Expired" }
+              { id: "revoked", label: "Revoked / Expired" },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setFilter(tab.id as any)}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
-                  filter === tab.id 
-                    ? "bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.3)]" 
-                    : "bg-black border border-zinc-800 text-zinc-500 hover:text-white"
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                  filter === tab.id
+                    ? "bg-red-800 text-white shadow-sm"
+                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                 }`}
               >
                 {tab.label}
@@ -251,148 +190,119 @@ export default function AdminPanel() {
             ))}
           </div>
 
-          <div className="w-full lg:w-72 relative">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div className="relative w-full lg:w-72">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
-              placeholder="Search by email..."
+              placeholder="Search by client email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black border border-zinc-800 rounded-lg pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-red-600 transition-colors"
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-red-800"
             />
           </div>
         </div>
 
-        <div className="grid gap-6">
-          {filteredOrders.map((order) => (
-            <div key={order.id} className="bg-zinc-950 border border-zinc-900 p-6 md:p-8 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 transition-all hover:border-zinc-700 relative group">
-
-              <button 
-                onClick={() => deleteOrder(order.id)}
-                className="absolute top-4 right-4 text-zinc-600 hover:text-red-500 transition-colors p-2 md:opacity-0 md:group-hover:opacity-100"
-                title="Delete Order"
+        {/* ORDERS LIST */}
+        <div className="space-y-4">
+          {filteredOrders.map((order) => {
+            const expired = isExpired(order.expires_at);
+            return (
+              <div
+                key={order.id}
+                className="bg-white border border-stone-200 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-
-              <div className="flex-1 min-w-0 w-full pr-10 md:pr-0">
-                <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${getStatusBadge(order)}`}>
-                    {getStatusLabel(order)}
-                  </span>
-                  <span className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
-                    Ordered: {formatDate(order.created_at)}
-                  </span>
-                  {order.expires_at && (
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${isExpired(order.expires_at) ? "text-orange-500" : "text-zinc-500"}`}>
-                      Expires: {formatDate(order.expires_at)}
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
+                        order.status === "completed" && !expired
+                          ? "bg-emerald-50 text-emerald-700"
+                          : order.status.startsWith("pending")
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-red-50 text-red-700"
+                      }`}
+                    >
+                      {order.status === "completed" && expired
+                        ? "Expired"
+                        : order.status.startsWith("pending")
+                        ? "Action Required"
+                        : order.status}
                     </span>
-                  )}
-                  {order.status.startsWith("pending_") && (
-                     <span className="bg-zinc-800 text-zinc-300 text-[9px] font-black uppercase px-2 py-1 rounded-md">
-                       Via: {getPaymentMethod(order.status)}
-                     </span>
-                  )}
-                </div>
+                    <span className="bg-stone-100 text-stone-700 text-[10px] font-black uppercase px-2.5 py-1 rounded-md">
+                      {getPaymentMethod(order.status)}
+                    </span>
+                    <span className="text-[11px] font-bold text-stone-400">
+                      {formatDate(order.created_at)}
+                    </span>
+                  </div>
 
-                <h3 className="text-lg font-black uppercase text-white truncate">{order.user_email}</h3>
-                
-                <div className="flex items-center gap-3 mt-1 mb-4 flex-wrap">
-                  <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">
-                    Total: <span className="text-white">${order.total_price}.00</span>
+                  <h3 className="text-base sm:text-lg font-black text-stone-950 truncate">
+                    {order.user_email}
+                  </h3>
+
+                  <p className="text-xs font-bold text-stone-500">
+                    Total: <span className="text-stone-950 font-black">${order.total_price}</span>
+                    {order.promo_code && (
+                      <span className="ml-2 text-emerald-700">• Promo: {order.promo_code}</span>
+                    )}
                   </p>
-                  {order.promo_code && (
-                    <span className="bg-green-500/10 border border-green-500/20 text-green-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">
-                      Promo: {order.promo_code}
-                    </span>
-                  )}
-                </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     {order.items?.map((item: any, idx: number) => (
-                      <span key={idx} className="bg-zinc-900 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300">
+                      <span
+                        key={idx}
+                        className="bg-stone-100 text-stone-800 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg"
+                      >
                         {item.name}
                       </span>
                     ))}
-                  </div>
 
-                  {order.proof_url ? (
-                    <a
-                      href={order.proof_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg hover:bg-blue-500 hover:text-white transition-colors"
+                    {order.proof_url && (
+                      <a
+                        href={order.proof_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white text-[10px] font-black uppercase px-3 py-1 rounded-lg transition-colors"
+                      >
+                        <Eye size={12} /> View Receipt
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* ACTION BUTTONS */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {order.status !== "completed" ? (
+                    <button
+                      onClick={() => approveOrder(order)}
+                      className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider px-5 py-3 rounded-xl transition-all cursor-pointer"
                     >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      View Receipt
-                    </a>
+                      <Check size={15} /> Approve
+                    </button>
                   ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 px-2 border border-dashed border-zinc-800 rounded-lg py-1">
-                      No receipt uploaded
-                    </span>
+                    <button
+                      onClick={() => revokeOrder(order.id)}
+                      className="inline-flex items-center gap-1.5 bg-stone-100 hover:bg-red-800 text-stone-700 hover:text-white text-xs font-black uppercase tracking-wider px-4 py-3 rounded-xl transition-all cursor-pointer"
+                    >
+                      <Ban size={14} /> Revoke
+                    </button>
                   )}
+
+                  <button
+                    onClick={() => deleteOrder(order.id)}
+                    title="Delete order"
+                    className="w-10 h-10 rounded-xl bg-stone-100 hover:bg-red-100 text-stone-500 hover:text-red-700 flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
-
-              <div className="w-full md:w-auto flex flex-col gap-3 mt-4 md:mt-0 flex-shrink-0">
-                {order.status !== "completed" ? (
-                  <button
-                    onClick={() => approveOrder(order)}
-                    className="w-full md:w-48 bg-white text-black font-black uppercase tracking-widest py-4 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-[0_0_15px_rgba(255,255,255,0.1)] active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Approve
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => {
-                      if (window.confirm("Are you sure you want to revoke access for this user?")) {
-                        revokeOrder(order.id);
-                      }
-                    }}
-                    className="w-full md:w-48 bg-black text-zinc-500 border border-zinc-800 font-black uppercase tracking-widest py-4 rounded-xl hover:bg-red-900/30 hover:text-red-500 hover:border-red-900 transition-all active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
-                    Revoke Access
-                  </button>
-                )}
-
-                {order.status === "completed" && isExpired(order.expires_at) && (
-                  <button
-                    onClick={() => approveOrder(order)}
-                    className="w-full md:w-48 bg-orange-500/10 text-orange-500 border border-orange-500/20 font-black uppercase tracking-widest py-3 rounded-xl hover:bg-orange-500 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2 text-[10px]"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Renew +3mo
-                  </button>
-                )}
-              </div>
-
-            </div>
-          ))}
+            );
+          })}
 
           {filteredOrders.length === 0 && (
-            <div className="text-center py-20 border-2 border-dashed border-zinc-900 rounded-3xl">
-              <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4 text-zinc-600">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <p className="text-zinc-500 font-black uppercase tracking-widest text-sm">No orders found.</p>
+            <div className="bg-white border-2 border-dashed border-stone-200 rounded-3xl p-12 text-center text-xs font-black uppercase text-stone-400">
+              No orders found.
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import { useCart } from "../context/CartContext";
 import { useUser, SignInButton, UserButton, SignOutButton } from "@clerk/nextjs";
 import { supabase } from "../../utils/supabase";
 import LanguageDropdown from "./LanguageDropdown";
+import { Utensils } from "lucide-react";
 import {
   Home,
   Dumbbell,
@@ -190,9 +191,7 @@ export default function Navbar() {
 
             <Link
               href="/dashboard?tab=programs"
-              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl transition-all active:scale-90 ${
-                pathname === "/dashboard" ? "text-red-800" : "text-stone-400 hover:text-stone-900"
-              }`}
+              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
             >
               <div className="p-1.5 rounded-xl">
                 <Dumbbell size={19} strokeWidth={2.2} />
@@ -201,25 +200,23 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/dashboard?tab=videos"
-              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
+              href="/dashboard?tab=nutrition"
+              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-emerald-700 transition-all active:scale-90"
             >
               <div className="p-1.5 rounded-xl">
-                <PlayCircle size={19} strokeWidth={2.2} />
+                <Utensils size={19} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] font-bold">Videos</span>
+              <span className="text-[10px] font-bold">Nutrition</span>
             </Link>
 
             <Link
-              href="/coaching"
-              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl transition-all active:scale-90 ${
-                pathname === "/coaching" ? "text-red-800" : "text-stone-400 hover:text-stone-900"
-              }`}
+              href="/dashboard?tab=coaching"
+              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
             >
-              <div className={`p-1.5 rounded-xl ${pathname === "/coaching" ? "bg-red-50" : ""}`}>
-                <Sparkles size={19} strokeWidth={pathname === "/coaching" ? 2.5 : 2} />
+              <div className="p-1.5 rounded-xl">
+                <Sparkles size={19} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] font-bold">Coaching</span>
+              <span className="text-[10px] font-bold">1-on-1</span>
             </Link>
 
             <Link
@@ -234,6 +231,7 @@ export default function Navbar() {
           </div>
         </nav>
       )}
+      
 
       {/* MOBILE DRAWER */}
       <div

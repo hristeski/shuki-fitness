@@ -8,34 +8,42 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../utils/supabase";
 import { useCurrency } from "@/app/context/CurrencyContext";
+import {
+  CreditCard,
+  Landmark,
+  Coins,
+  Upload,
+  CheckCircle2,
+  Lock,
+  ArrowLeft,
+  AlertCircle,
+} from "lucide-react";
+
+type PaymentMethod = "card" | "bank" | "crypto";
 
 export default function CheckoutPage() {
-  // ДОДАДЕНИ: Функциите за промо код од контекстот
-  const { 
-    cartItems, 
-    totalPrice, 
-    subtotal, 
-    discountAmount, 
+  const {
+    cartItems,
+    totalPrice,
+    subtotal,
+    discountAmount,
     removeFromCart,
     appliedPromoCode,
     applyPromoCode,
-    removePromoCode
+    removePromoCode,
   } = useCart();
-  
+
   const { user, isSignedIn, isLoaded } = useUser();
   const { convert } = useCurrency();
   const router = useRouter();
 
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("bank");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [duplicateItems, setDuplicateItems] = useState<string[]>([]);
   const [checkingDuplicates, setCheckingDuplicates] = useState(false);
-  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  // Локален state за полето за промо код на Checkout
   const [promoInput, setPromoInput] = useState("");
   const [promoMessage, setPromoMessage] = useState({ type: "", text: "" });
 
@@ -50,19 +58,19 @@ export default function CheckoutPage() {
       setCheckingDuplicates(true);
       const { data, error } = await supabase
         .from("orders")
-        .select("items, status, id")
+        .select("items, status")
         .eq("user_id", user!.id)
-        .in("status", ["pending_bank", "pending_binance", "pending_skrill", "pending_neteller", "pending_paypal", "pending_ria", "completed"]);
+        .in("status", ["pending_bank", "pending_crypto", "pending_card", "completed"]);
 
       if (!error && data) {
-        const boughtItemIds = new Set<string>();
+        const boughtIds = new Set<string>();
         data.forEach((order: any) => {
-          order.items?.forEach((item: any) => boughtItemIds.add(item.id));
+          order.items?.forEach((item: any) => boughtIds.add(item.id));
         });
-        const dupes = cartItems.filter((item) => boughtItemIds.has(item.id)).map((item) => item.name);
+        const dupes = cartItems
+          .filter((item) => boughtIds.has(item.id))
+          .map((item) => item.name);
         setDuplicateItems(dupes);
-        const pending = data.filter((o: any) => o.status?.startsWith("pending_"));
-        setPendingOrders(pending);
       }
       setCheckingDuplicates(false);
     }
@@ -70,108 +78,98 @@ export default function CheckoutPage() {
     checkDuplicates();
   }, [isLoaded, isSignedIn, user, cartItems]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProofFile(e.target.files?.[0] || null);
-  };
-
-  async function handleUpdateReceipt(orderId: string) {
-    if (!proofFile) { alert("Please select a new receipt image first."); return; }
-    setUpdatingOrderId(orderId);
-    try {
-      const fileExt = proofFile.name.split(".").pop();
-      const fileName = `${user!.id}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("receipts").upload(fileName, proofFile);
-      if (uploadError) throw new Error("Failed to upload receipt.");
-      const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(fileName);
-      const { error: dbError } = await supabase.from("orders").update({ proof_url: publicUrlData.publicUrl }).eq("id", orderId);
-      if (dbError) throw dbError;
-      alert("Receipt updated successfully! Admin will review it shortly.");
-      setProofFile(null);
-    } catch (error) {
-      console.error("Update receipt error:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  }
-
-  // Функции за Промо код
   const handlePromoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!promoInput.trim()) return;
-
     const result = applyPromoCode(promoInput);
-    if (result.success) {
-      setPromoMessage({ type: "success", text: result.message });
-      setPromoInput("");
-    } else {
-      setPromoMessage({ type: "error", text: result.message });
-    }
-  };
-
-  const handleRemovePromo = () => {
-    removePromoCode();
-    setPromoMessage({ type: "", text: "" });
+    setPromoMessage({ type: result.success ? "success" : "error", text: result.message });
+    if (result.success) setPromoInput("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMethod) { alert("Please select a payment method."); return; }
-    if (!proofFile) { alert("Please upload your payment receipt."); return; }
-    if (duplicateItems.length > 0) { alert(`You already own: ${duplicateItems.join(", ")}.`); return; }
     if (!user) return;
+    if (duplicateItems.length > 0) {
+      alert(`You already own: ${duplicateItems.join(", ")}.`);
+      return;
+    }
+
+    // Ако е избрана картичка, тука ќе се поврзе Stripe / CaSys API endpoint
+    if (selectedMethod === "card") {
+      alert(
+        "Automatic Card Payment (Stripe / CaSys) will be activated once your merchant account keys are connected. Please use Bank Transfer or Crypto for now."
+      );
+      return;
+    }
+
+    if (!proofFile) {
+      alert("Please upload your payment receipt / transfer screenshot.");
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const fileExt = proofFile.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from("receipts").upload(fileName, proofFile);
-      if (uploadError) throw new Error("Failed to upload receipt image.");
-      const { data: publicUrlData } = supabase.storage.from("receipts").getPublicUrl(fileName);
-      const orderData = {
-        user_id: user.id,
-        user_email: user.primaryEmailAddress?.emailAddress || "no-email@clerk.com",
-        total_price: totalPrice,
-        items: cartItems,
-        status: `pending_${selectedMethod}`,
-        proof_url: publicUrlData.publicUrl,
-        // НОВО: Го праќаме кодот во базата!
-        promo_code: appliedPromoCode || null, 
-      };
-      const { error: dbError } = await supabase.from("orders").insert([orderData]);
+
+      const { error: uploadError } = await supabase.storage
+        .from("receipts")
+        .upload(fileName, proofFile);
+      if (uploadError) throw new Error("Failed to upload receipt.");
+
+      const { data: publicUrlData } = supabase.storage
+        .from("receipts")
+        .getPublicUrl(fileName);
+
+      const { error: dbError } = await supabase.from("orders").insert([
+        {
+          user_id: user.id,
+          user_email: user.primaryEmailAddress?.emailAddress || "no-email@clerk.com",
+          total_price: totalPrice,
+          items: cartItems,
+          status: `pending_${selectedMethod}`,
+          proof_url: publicUrlData.publicUrl,
+          promo_code: appliedPromoCode || null,
+        },
+      ]);
+
       if (dbError) throw dbError;
+
       cartItems.forEach((item) => removeFromCart(item.id));
       setOrderSuccess(true);
     } catch (error) {
-      console.error("Грешка при креирање нарачка:", error);
-      alert("Something went wrong. Check console for details.");
+      console.error("Order error:", error);
+      alert("Something went wrong submitting your order. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  if (!isLoaded) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-zinc-800 border-t-red-600 rounded-full animate-spin"></div>
-    </div>
-  );
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-evo-surface flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-stone-200 border-t-red-800 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (orderSuccess) {
     return (
-      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="w-24 h-24 bg-red-600/20 rounded-full flex items-center justify-center mb-8 border border-red-600/50 relative z-10 animate-bounce">
-          <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <main className="min-h-screen bg-evo-surface text-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-6">
+          <CheckCircle2 size={40} />
         </div>
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 text-center relative z-10">
-          Order <span className="text-red-600">Submitted</span>
+        <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter mb-3">
+          Order <span className="text-red-800">Submitted</span>
         </h1>
-        <p className="text-zinc-400 mb-12 text-center max-w-md font-bold text-sm tracking-widest leading-relaxed relative z-10">
-          We are verifying your payment proof. Your program will be unlocked in your vault shortly.
+        <p className="text-stone-600 text-sm max-w-md mb-8">
+          We received your payment proof. Once verified by our team, your programs, nutrition, and Member Vault will unlock automatically.
         </p>
-        <Link href="/dashboard" className="bg-white text-black font-black uppercase tracking-widest py-4 px-10 rounded-xl hover:bg-zinc-200 transition-colors shadow-[0_0_30px_rgba(255,255,255,0.2)] active:scale-[0.98] relative z-10">
-          Enter Vault
+        <Link
+          href="/dashboard"
+          className="bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-8 py-4 rounded-2xl transition-all shadow-lg"
+        >
+          Go to My Vault
         </Link>
       </main>
     );
@@ -179,280 +177,272 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <main className="flex flex-col min-h-screen bg-black text-white items-center justify-center p-4">
-        <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-6 text-zinc-500">
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-        </div>
-        <h1 className="text-2xl font-black uppercase tracking-widest mb-4">Cart is empty</h1>
-        <Link href="/" className="text-red-600 hover:text-white transition-colors underline uppercase font-bold text-xs tracking-widest underline-offset-4">
-          Return to Store
+      <main className="min-h-screen bg-evo-surface text-stone-950 flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-2xl font-black uppercase tracking-tight mb-3">Your cart is empty</h1>
+        <Link
+          href="/#programs"
+          className="bg-red-800 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl"
+        >
+          Browse Programs
         </Link>
       </main>
     );
   }
 
-  const paymentOptions = [
-    { id: "bank", name: "Bank Transfer", desc: "Local wire" },
-    { id: "binance", name: "Crypto", desc: "USDT TRC20" },
-    { id: "skrill", name: "Skrill", desc: "Instant transfer" },
-    { id: "neteller", name: "Neteller", desc: "Instant transfer" },
-    { id: "paypal", name: "PayPal", desc: "Friends & Family" },
-    { id: "ria", name: "Ria Transfer", desc: "Cash pickup" },
+  const paymentOptions: { id: PaymentMethod; name: string; desc: string; icon: any }[] = [
+    { id: "card", name: "Bank Card", desc: "Visa / Mastercard", icon: CreditCard },
+    { id: "bank", name: "Bank Transfer", desc: "Трансакциска сметка", icon: Landmark },
+    { id: "crypto", name: "Crypto", desc: "USDT (TRC20)", icon: Coins },
   ];
 
-  const canSubmit = selectedMethod && proofFile && !isProcessing && duplicateItems.length === 0 && !checkingDuplicates;
+  const canSubmit =
+    !isProcessing &&
+    !checkingDuplicates &&
+    duplicateItems.length === 0 &&
+    (selectedMethod === "card" || !!proofFile);
 
   return (
-    <main className="flex flex-col min-h-screen bg-black text-white pt-12 md:pt-24 pb-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-
-      <div className="mb-8 md:mb-12">
-        <Link href="/" className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
-          <span>←</span> Back to store
+    <main className="min-h-screen bg-evo-surface text-stone-950 py-10 md:py-16 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-stone-500 hover:text-red-800 mb-6"
+        >
+          <ArrowLeft size={14} /> Back to Store
         </Link>
-      </div>
 
-      {duplicateItems.length > 0 && (
-        <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-2xl p-6">
-          <p className="text-red-400 font-black uppercase tracking-widest text-sm mb-1">Already Owned</p>
-          <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">
-            You already own: <span className="text-white">{duplicateItems.join(", ")}</span>. Please remove from cart to proceed.
-          </p>
-        </div>
-      )}
+        {duplicateItems.length > 0 && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-5 flex items-start gap-3">
+            <AlertCircle className="text-red-700 flex-shrink-0 mt-0.5" size={18} />
+            <p className="text-xs font-bold text-red-800">
+              You already own or have a pending order for: {duplicateItems.join(", ")}. Please remove it from your cart.
+            </p>
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT: PAYMENT FORM */}
+          <div className="lg:col-span-7 bg-white border border-stone-200 rounded-3xl p-6 sm:p-9 shadow-sm">
+            <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-1">
+              Secure <span className="text-red-800">Checkout</span>
+            </h1>
+            <p className="text-xs font-bold text-stone-500 mb-8">
+              Account: {user?.primaryEmailAddress?.emailAddress}
+            </p>
 
-        <div className="lg:col-span-2">
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-2 leading-none">
-            Secure <span className="text-red-600">Checkout</span>
-          </h1>
-          <p className="text-zinc-500 mb-10 font-bold text-[10px] uppercase tracking-widest">
-            Logged in as <span className="text-white">{user?.primaryEmailAddress?.emailAddress}</span>
-          </p>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* STEP 1: PAYMENT METHOD */}
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-3">
+                  1. Select Payment Method
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {paymentOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    const active = selectedMethod === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSelectedMethod(opt.id)}
+                        className={`p-4 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col gap-2 ${
+                          active
+                            ? "border-red-800 bg-red-50/50 shadow-sm"
+                            : "border-stone-200 bg-stone-50 hover:border-stone-300"
+                        }`}
+                      >
+                        <Icon size={20} className={active ? "text-red-800" : "text-stone-500"} />
+                        <div>
+                          <p className="text-xs font-black uppercase text-stone-950">{opt.name}</p>
+                          <p className="text-[10px] font-bold text-stone-500">{opt.desc}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmit} className="bg-zinc-950/50 border border-zinc-900 p-6 md:p-10 rounded-3xl backdrop-blur-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-red-600/5 blur-[100px] rounded-full pointer-events-none"></div>
+              {/* PAYMENT INSTRUCTIONS BOX */}
+              <div className="bg-stone-50 border border-stone-200 rounded-2xl p-5 space-y-2.5 text-xs">
+                {selectedMethod === "card" && (
+                  <div className="space-y-2">
+                    <p className="font-black uppercase text-red-800 text-[11px]">
+                      Instant Card Payment (Visa / Mastercard)
+                    </p>
+                    <p className="text-stone-600 leading-relaxed">
+                      Card checkout connects directly to Stripe / CaSys for instant automatic Vault unlock.
+                    </p>
+                  </div>
+                )}
 
-            <div className="flex items-center gap-4 mb-8 border-b border-zinc-900 pb-6 relative z-10">
-              <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-black text-sm">1</div>
-              <h2 className="text-xl font-black uppercase tracking-widest text-white">Select Method</h2>
-            </div>
+                {selectedMethod === "bank" && (
+                  <div className="space-y-2 font-mono">
+                    <p className="font-sans font-black uppercase text-red-800 text-[11px] mb-2">
+                      Bank Transfer / Трансакциска сметка
+                    </p>
+                    <p><span className="text-stone-500">Bank:</span> NLB Banka AD Skopje</p>
+                    <p><span className="text-stone-500">Recipient:</span> Evolution Body / Andrej Angjeleski</p>
+                    <p><span className="text-stone-500">Account / IBAN:</span> MK07 2100 0000 0000 000</p>
+                    <p><span className="text-stone-500">Amount:</span> <strong className="text-stone-950">{convert(totalPrice)}</strong></p>
+                  </div>
+                )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 relative z-10">
-              {paymentOptions.map((method) => (
-                <div
-                  key={method.id}
-                  onClick={() => setSelectedMethod(method.id)}
-                  className={`border ${selectedMethod === method.id ? "border-red-600 bg-red-600/10 shadow-[0_0_20px_rgba(220,38,38,0.15)]" : "border-zinc-800 bg-black"} rounded-2xl p-5 cursor-pointer hover:border-zinc-500 transition-all flex flex-col items-center justify-center text-center h-28 group`}
-                >
-                  <span className="font-black text-sm uppercase tracking-widest text-white group-hover:text-red-500 transition-colors">{method.name}</span>
-                  <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-2">{method.desc}</span>
+                {selectedMethod === "crypto" && (
+                  <div className="space-y-2 font-mono">
+                    <p className="font-sans font-black uppercase text-red-800 text-[11px] mb-2">
+                      Crypto Payment (USDT TRC20)
+                    </p>
+                    <p><span className="text-stone-500">Network:</span> Tron (TRC20)</p>
+                    <p className="bg-white border border-stone-200 p-3 rounded-xl break-all font-bold text-stone-950">
+                      TXYZ1234567890ABCDEFGHIJKLMNOPQRST
+                    </p>
+                    <p className="font-sans text-[11px] text-red-700 font-bold">
+                      * Send exactly {convert(totalPrice)} equivalent in USDT.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* STEP 2: UPLOAD RECEIPT (FOR BANK & CRYPTO) */}
+              {selectedMethod !== "card" && (
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-stone-500 mb-3">
+                    2. Upload Payment Proof (Required)
+                  </p>
+                  <label
+                    className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
+                      proofFile
+                        ? "border-emerald-500 bg-emerald-50/40"
+                        : "border-stone-300 hover:border-red-800 bg-stone-50"
+                    }`}
+                  >
+                    <Upload
+                      size={22}
+                      className={proofFile ? "text-emerald-600 mb-2" : "text-stone-400 mb-2"}
+                    />
+                    <p className="text-xs font-black uppercase text-stone-700">
+                      {proofFile ? proofFile.name : "Click to upload receipt (PNG, JPG, PDF)"}
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                      className="hidden"
+                      required
+                    />
+                  </label>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className={`w-full font-black uppercase tracking-wider text-xs py-4 rounded-2xl transition-all shadow-lg cursor-pointer ${
+                  !canSubmit
+                    ? "bg-stone-200 text-stone-400 cursor-not-allowed shadow-none"
+                    : "bg-red-800 hover:bg-red-700 text-white shadow-red-900/20 active:scale-[0.98]"
+                }`}
+              >
+                {isProcessing
+                  ? "Processing..."
+                  : selectedMethod === "card"
+                  ? `Pay ${convert(totalPrice)} by Card`
+                  : "Submit Order & Proof"}
+              </button>
+            </form>
+          </div>
+
+          {/* RIGHT: ORDER SUMMARY */}
+          <div className="lg:col-span-5 bg-white border border-stone-200 rounded-3xl p-6 sm:p-8 shadow-sm lg:sticky lg:top-24">
+            <h2 className="text-sm font-black uppercase tracking-wider pb-4 mb-5 border-b border-stone-100">
+              Order Summary
+            </h2>
+
+            <div className="space-y-4 mb-6">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-3.5">
+                  <div className="relative w-14 h-16 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
+                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black uppercase text-stone-950 leading-tight">
+                      {item.name}
+                    </p>
+                    <p className="text-[10px] font-bold text-stone-500 mt-0.5">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+                  <p className="text-xs font-black text-stone-950 flex-shrink-0">
+                    {convert(item.price * item.quantity)}
+                  </p>
                 </div>
               ))}
             </div>
 
-            {selectedMethod && (
-              <div className="bg-black border border-zinc-800 rounded-2xl p-6 mb-10 relative z-10">
-                <h3 className="font-black uppercase tracking-widest text-red-600 mb-4 text-xs">Payment Details</h3>
-                <div className="space-y-3 text-xs text-zinc-300 font-mono">
-                  {selectedMethod === "bank" && (
-                    <>
-                      <p><span className="text-zinc-500">Bank Name:</span> NLB Banka AD Skopje</p>
-                      <p><span className="text-zinc-500">Recipient:</span> Shuki Fitness</p>
-                      <p><span className="text-zinc-500">IBAN:</span> MK07 2100 0000 0000 000</p>
-                      <p><span className="text-zinc-500">Amount:</span> <span className="text-white font-bold">{convert(totalPrice)}</span></p>
-                    </>
-                  )}
-                  {selectedMethod === "binance" && (
-                    <>
-                      <p><span className="text-zinc-500">Network:</span> Tron (TRC20)</p>
-                      <p><span className="text-zinc-500">Address:</span></p>
-                      <p className="bg-zinc-900 p-4 rounded-xl text-white break-all border border-zinc-800">TXYZ1234567890ABCDEFGHIJKLMNOPQRST</p>
-                      <p className="text-red-500 text-[10px] uppercase font-sans font-bold tracking-widest mt-2">* Send exactly {convert(totalPrice)}.</p>
-                    </>
-                  )}
-                  {selectedMethod === "skrill" && (
-                    <>
-                      <p><span className="text-zinc-500">Skrill Email:</span></p>
-                      <p className="bg-zinc-900 p-4 rounded-xl text-white border border-zinc-800">payments@shukifitness.com</p>
-                      <p className="text-red-500 text-[10px] uppercase font-sans font-bold tracking-widest mt-2">* Send exactly {convert(totalPrice)}.</p>
-                    </>
-                  )}
-                  {selectedMethod === "neteller" && (
-                    <>
-                      <p><span className="text-zinc-500">Neteller Email:</span></p>
-                      <p className="bg-zinc-900 p-4 rounded-xl text-white border border-zinc-800">payments@shukifitness.com</p>
-                      <p className="text-red-500 text-[10px] uppercase font-sans font-bold tracking-widest mt-2">* Send exactly {convert(totalPrice)}.</p>
-                    </>
-                  )}
-                  {selectedMethod === "paypal" && (
-                    <>
-                      <p><span className="text-zinc-500">PayPal Link:</span> paypal.me/shukifitness</p>
-                      <p className="text-red-500 text-[10px] uppercase font-sans font-bold tracking-widest mt-2">* Send exactly {convert(totalPrice)} as "Sending to a friend" to avoid holds.</p>
-                    </>
-                  )}
-                  {selectedMethod === "ria" && (
-                    <>
-                      <p><span className="text-zinc-500">Receiver Name:</span> [Tvoe Ime Prezime]</p>
-                      <p><span className="text-zinc-500">Country:</span> North Macedonia</p>
-                      <p className="text-red-500 text-[10px] uppercase font-sans font-bold tracking-widest mt-2">* Send exactly {convert(totalPrice)}.</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-4 mb-8 border-b border-zinc-900 pb-6 relative z-10">
-              <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-black text-sm">2</div>
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-widest text-white">Upload Proof</h2>
-                <p className="text-red-500 text-[9px] font-bold uppercase tracking-widest mt-0.5">* Required — order cannot be submitted without receipt</p>
-              </div>
-            </div>
-
-            <div className="mb-10 relative z-10">
-              <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer transition-colors group ${proofFile ? "border-green-600 bg-green-600/5" : "border-zinc-800 hover:border-red-600 bg-black"}`}>
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg className={`w-8 h-8 mb-3 transition-colors ${proofFile ? "text-green-500" : "text-zinc-500 group-hover:text-red-600"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <p className="mb-2 text-xs font-bold text-zinc-500 uppercase tracking-widest">
-                    <span className="text-white">Click to upload</span> receipt
-                  </p>
-                  <p className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">PNG, JPG, PDF accepted</p>
-                </div>
-                <input type="file" accept="image/*,.pdf" onChange={handleFileChange} className="hidden" required />
-              </label>
-
-              {proofFile && (
-                <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-between">
-                  <p className="text-green-500 text-xs font-bold uppercase tracking-widest truncate flex-1">✓ {proofFile.name}</p>
-                  <button type="button" onClick={() => setProofFile(null)} className="text-zinc-500 hover:text-white text-xs font-bold uppercase px-2 ml-2 flex-shrink-0">Clear</button>
-                </div>
-              )}
-
-              {!proofFile && (
-                <p className="mt-3 text-[10px] text-red-500/70 font-bold uppercase tracking-widest text-center">
-                  ⚠ Receipt is required to complete your purchase
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className={`w-full font-black uppercase tracking-widest py-6 rounded-2xl transition-all shadow-lg flex justify-center items-center gap-3 relative z-10 ${
-                !canSubmit
-                  ? "bg-zinc-900 text-zinc-600 cursor-not-allowed border border-zinc-800"
-                  : "bg-red-600 text-white hover:bg-red-700 shadow-[0_0_40px_rgba(220,38,38,0.3)] active:scale-[0.98]"
-              }`}
-            >
-              {checkingDuplicates ? (
-                <><div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin"></div>Checking...</>
-              ) : isProcessing ? (
-                <><div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin"></div>Processing...</>
-              ) : "Complete Purchase"}
-            </button>
-          </form>
-
-        </div>
-
-        {/* ORDER SUMMARY */}
-        <div className="bg-black border border-zinc-800 rounded-3xl p-8 lg:sticky lg:top-32 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[50px] rounded-full pointer-events-none"></div>
-
-          <h2 className="text-sm font-black uppercase tracking-widest text-white mb-8 border-b border-zinc-900 pb-4">Order Summary</h2>
-
-          <div className="space-y-6 mb-8">
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex gap-4 items-center">
-                <div className="relative w-16 h-20 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 flex-shrink-0">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-white uppercase leading-tight">{item.name}</p>
-                  <p className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase mt-1">Qty: {item.quantity}</p>
-                  {duplicateItems.includes(item.name) && (
-                    <p className="text-[9px] text-red-500 font-bold uppercase tracking-widest mt-1">Already owned</p>
-                  )}
-                </div>
-                <p className="font-black text-white flex-shrink-0">{convert(item.price * item.quantity)}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* ПОЛЕ ЗА ПРОМО КОД */}
-          <div className="mb-6 pt-6 border-t border-zinc-900">
-            {!appliedPromoCode ? (
-              <form onSubmit={handlePromoSubmit} className="flex flex-col gap-2">
-                <div className="flex gap-2">
+            {/* PROMO CODE */}
+            <div className="py-4 border-y border-stone-100 mb-4">
+              {!appliedPromoCode ? (
+                <form onSubmit={handlePromoSubmit} className="flex gap-2">
                   <input
                     type="text"
                     placeholder="Promo code"
                     value={promoInput}
                     onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                    className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600 transition-colors placeholder:normal-case"
+                    className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-red-800"
                   />
                   <button
                     type="submit"
-                    className="bg-zinc-800 hover:bg-zinc-700 text-white font-bold uppercase text-xs tracking-widest px-4 rounded-xl transition-colors"
+                    className="bg-stone-950 hover:bg-red-800 text-white text-[11px] font-black uppercase px-4 rounded-xl cursor-pointer"
                   >
                     Apply
                   </button>
+                </form>
+              ) : (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                  <span className="text-xs font-black text-emerald-800">
+                    Code: {appliedPromoCode}
+                  </span>
+                  <button
+                    onClick={removePromoCode}
+                    className="text-[10px] font-bold uppercase text-stone-500 underline cursor-pointer"
+                  >
+                    Remove
+                  </button>
                 </div>
-                {promoMessage.text && (
-                  <p className={`text-[10px] font-bold uppercase tracking-widest ${promoMessage.type === "success" ? "text-green-500" : "text-red-500"}`}>
-                    {promoMessage.text}
-                  </p>
-                )}
-              </form>
-            ) : (
-              <div className="flex items-center justify-between bg-zinc-900 border border-dashed border-red-600 p-3 rounded-xl">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Applied Code:</span>
-                  <span className="text-sm font-black text-red-500">{appliedPromoCode}</span>
+              )}
+              {promoMessage.text && (
+                <p
+                  className={`text-[10px] font-bold mt-2 ${
+                    promoMessage.type === "success" ? "text-emerald-600" : "text-red-700"
+                  }`}
+                >
+                  {promoMessage.text}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between font-bold text-stone-500">
+                <span>Subtotal</span>
+                <span className="text-stone-950">{convert(subtotal)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between font-bold text-emerald-600">
+                  <span>Discount</span>
+                  <span>-{convert(discountAmount)}</span>
                 </div>
-                <button onClick={handleRemovePromo} className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white underline">
-                  Remove
-                </button>
+              )}
+              <div className="flex justify-between items-baseline pt-4 mt-2 border-t border-stone-100">
+                <span className="font-black uppercase text-stone-950">Total</span>
+                <span className="text-2xl font-black text-red-800">{convert(totalPrice)}</span>
               </div>
-            )}
-          </div>
+            </div>
 
-          <div className="border-t border-zinc-900 pt-6 space-y-4">
-            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-zinc-500">
-              <span>Subtotal</span>
-              <span className="text-white">{convert(subtotal)}</span>
-            </div>
-            
-            {discountAmount > 0 && (
-              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-green-500">
-                <span>Discount Applied</span>
-                <span>-{convert(discountAmount)}</span>
-              </div>
-            )}
-            
-            <div className="flex justify-between items-center text-xs font-bold uppercase tracking-widest text-zinc-500">
-              <span>Digital Delivery</span>
-              <span className="text-green-500">Free</span>
-            </div>
-            
-            <div className="flex justify-between items-center pt-6 mt-2 border-t border-zinc-900">
-              <span className="font-black uppercase tracking-widest text-zinc-400">Total</span>
-              <span className="font-black text-3xl text-red-600">{convert(totalPrice)}</span>
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-center justify-center gap-2 text-[9px] text-zinc-600 font-bold uppercase tracking-widest">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Secure SSL Checkout
+            <p className="mt-6 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              <Lock size={12} /> 256-bit SSL Encrypted Checkout
+            </p>
           </div>
         </div>
-
       </div>
     </main>
   );
