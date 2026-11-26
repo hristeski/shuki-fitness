@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useUser, SignInButton, UserButton, SignOutButton } from "@clerk/nextjs";
 import LanguageDropdown from "./LanguageDropdown";
@@ -28,10 +28,113 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
+function MobileBottomBar({ userGender }: { userGender: "men" | "women" }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentTab = searchParams.get("tab") || "programs";
+  const isOnDashboard = pathname.startsWith("/dashboard");
+  const isMen = userGender === "men";
+
+  const isHomeActive = pathname === "/";
+  const isProgramsActive = isOnDashboard && currentTab === "programs";
+  const isNutritionActive = isOnDashboard && currentTab === "nutrition";
+  const isCoachingActive = isOnDashboard && currentTab === "coaching";
+  const isProfileActive = isOnDashboard && currentTab === "profile";
+
+  const items = [
+    {
+      href: "/",
+      label: "Home",
+      icon: Home,
+      active: isHomeActive,
+      activePill: "bg-stone-950 text-white shadow-sm",
+      idlePill: "bg-stone-100 text-stone-600",
+      activeText: "text-stone-950",
+      idleText: "text-stone-500",
+    },
+    {
+      href: "/dashboard?tab=programs",
+      label: "Programs",
+      icon: Dumbbell,
+      active: isProgramsActive,
+      activePill: isMen
+        ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30"
+        : "bg-pink-500 text-white shadow-sm shadow-pink-500/30",
+      idlePill: isMen ? "bg-blue-50 text-blue-600" : "bg-pink-50 text-pink-500",
+      activeText: isMen ? "text-blue-600" : "text-pink-600",
+      idleText: "text-stone-500",
+    },
+    {
+      href: "/dashboard?tab=nutrition",
+      label: "Nutrition",
+      icon: Utensils,
+      active: isNutritionActive,
+      activePill: "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30",
+      idlePill: "bg-emerald-50 text-emerald-600",
+      activeText: "text-emerald-600",
+      idleText: "text-stone-500",
+    },
+    {
+      href: "/dashboard?tab=coaching",
+      label: "1-on-1",
+      icon: Sparkles,
+      active: isCoachingActive,
+      activePill: "bg-orange-500 text-white shadow-sm shadow-orange-500/30",
+      idlePill: "bg-orange-50 text-orange-500",
+      activeText: "text-orange-600",
+      idleText: "text-stone-500",
+    },
+    {
+      href: "/dashboard?tab=profile",
+      label: "Profile",
+      icon: User,
+      active: isProfileActive,
+      activePill: "bg-red-700 text-white shadow-sm shadow-red-700/30",
+      idlePill: "bg-red-50 text-red-700",
+      activeText: "text-red-700",
+      idleText: "text-stone-500",
+    },
+  ];
+
+  return (
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-stone-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+      <div className="grid grid-cols-5 items-center h-[68px] max-w-md mx-auto gap-1">
+        {items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex flex-col items-center justify-center gap-1 py-1 rounded-2xl transition-all active:scale-95"
+            >
+              <div
+                className={`w-9 h-8 rounded-xl flex items-center justify-center transition-all ${
+                  item.active ? item.activePill : item.idlePill
+                }`}
+              >
+                <Icon size={17} strokeWidth={item.active ? 2.5 : 2.1} />
+              </div>
+              <span
+                className={`text-[10px] font-black tracking-tight leading-none ${
+                  item.active ? item.activeText : item.idleText
+                }`}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasActiveSub, setHasActiveSub] = useState(false);
+  const [userGender, setUserGender] = useState<"men" | "women">("men");
 
   const { totalItems, openCart } = useCart();
   const { isSignedIn, user, isLoaded } = useUser();
@@ -62,6 +165,30 @@ export default function Navbar() {
             (!order.expires_at || new Date(order.expires_at) >= now)
         );
         setHasActiveSub(active);
+
+        // Автоматска детекција на пол од купената програма за бојата на Programs во долното мени
+        const sorted = [...orders].sort((a: any, b: any) => {
+          if (a.status === "completed" && b.status !== "completed") return -1;
+          if (b.status === "completed" && a.status !== "completed") return 1;
+          return 0;
+        });
+
+        for (const order of sorted) {
+          const itemsArray =
+            typeof order.items === "string" ? JSON.parse(order.items) : order.items || [];
+          for (const item of itemsArray) {
+            const idLower = String(item.id || "").toLowerCase();
+            const nameLower = String(item.name || "").toLowerCase();
+            if (idLower.includes("women") || idLower.includes("woman") || nameLower.includes("women")) {
+              setUserGender("women");
+              return;
+            }
+            if (idLower.includes("men") || nameLower.includes("men")) {
+              setUserGender("men");
+              return;
+            }
+          }
+        }
       } catch {
         setHasActiveSub(false);
       }
@@ -133,7 +260,7 @@ export default function Navbar() {
                 href="/dashboard"
                 className="hidden md:inline-flex items-center gap-1.5 bg-red-800 text-white px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider hover:bg-red-900 transition-all shadow-sm active:scale-95"
               >
-                My Vault
+                My Hub
                 <ArrowUpRight size={14} />
               </Link>
             )}
@@ -174,63 +301,11 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* MOBILE APP BOTTOM BAR — ONLY FOR SUBSCRIBED MEMBERS (AND ADMINS) */}
+      {/* MOBILE APP BOTTOM BAR — COLOR-CODED & SUBSCRIBERS ONLY */}
       {showMemberBottomBar && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-stone-200 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-          <div className="grid grid-cols-5 items-center h-16 max-w-md mx-auto">
-            <Link
-              href="/"
-              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl transition-all active:scale-90 ${
-                pathname === "/" ? "text-red-800" : "text-stone-400 hover:text-stone-900"
-              }`}
-            >
-              <div className={`p-1.5 rounded-xl ${pathname === "/" ? "bg-red-50" : ""}`}>
-                <Home size={19} strokeWidth={pathname === "/" ? 2.5 : 2} />
-              </div>
-              <span className="text-[10px] font-bold">Home</span>
-            </Link>
-
-            <Link
-              href="/dashboard?tab=programs"
-              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
-            >
-              <div className="p-1.5 rounded-xl">
-                <Dumbbell size={19} strokeWidth={2.2} />
-              </div>
-              <span className="text-[10px] font-bold">Programs</span>
-            </Link>
-
-            <Link
-              href="/dashboard?tab=nutrition"
-              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-emerald-700 transition-all active:scale-90"
-            >
-              <div className="p-1.5 rounded-xl">
-                <Utensils size={19} strokeWidth={2.2} />
-              </div>
-              <span className="text-[10px] font-bold">Nutrition</span>
-            </Link>
-
-            <Link
-              href="/dashboard?tab=coaching"
-              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
-            >
-              <div className="p-1.5 rounded-xl">
-                <Sparkles size={19} strokeWidth={2.2} />
-              </div>
-              <span className="text-[10px] font-bold">1-on-1</span>
-            </Link>
-
-            <Link
-              href="/dashboard?tab=profile"
-              className="flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-2xl text-stone-400 hover:text-red-800 transition-all active:scale-90"
-            >
-              <div className="p-1.5 rounded-xl">
-                <User size={19} strokeWidth={2.2} />
-              </div>
-              <span className="text-[10px] font-bold">Profile</span>
-            </Link>
-          </div>
-        </nav>
+        <Suspense fallback={null}>
+          <MobileBottomBar userGender={userGender} />
+        </Suspense>
       )}
 
       {/* MOBILE DRAWER */}
@@ -276,7 +351,7 @@ export default function Navbar() {
             >
               <span className="flex items-center gap-2.5">
                 <User size={16} />
-                My Profile &amp; Programs
+                My Hub &amp; Programs
               </span>
               <ArrowUpRight size={16} />
             </Link>

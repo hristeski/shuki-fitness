@@ -427,7 +427,7 @@ function DashboardContent() {
       <div className="min-h-screen bg-evo-surface flex flex-col items-center justify-center">
         <div className="w-10 h-10 border-4 border-stone-200 border-t-blue-600 rounded-full animate-spin mb-4" />
         <p className="text-stone-500 font-bold uppercase tracking-widest text-xs">
-          Loading Member Hub...
+          Loading Programs...
         </p>
       </div>
     );
@@ -666,7 +666,7 @@ function DashboardContent() {
           </div>
 
           {/* 3. COLOR-CODED SEGMENTED APP NAVIGATION */}
-          <div className="relative z-10 mt-6 pt-5 border-t border-stone-800/90 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="relative z-10 mt-6 pt-5 border-t border-stone-800/90 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             {navTabs.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
@@ -676,31 +676,39 @@ function DashboardContent() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`group flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                  className={`group flex flex-col sm:flex-row items-start sm:items-center gap-2.5 sm:gap-3 p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     active
                       ? tab.activeClass
                       : "bg-stone-900/70 border-stone-800 text-stone-300 hover:bg-stone-800/90 hover:text-white"
                   }`}
                 >
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                      active
-                        ? "bg-white/20 text-white"
-                        : `bg-stone-800 ${tab.idleIconClass} group-hover:text-white`
-                    }`}
-                  >
-                    <Icon size={18} />
+                  <div className="w-full sm:w-auto flex items-center justify-between">
+                    <div
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                        active
+                          ? "bg-white/20 text-white"
+                          : `bg-stone-800 ${tab.idleIconClass} group-hover:text-white`
+                      }`}
+                    >
+                      <Icon size={18} />
+                    </div>
+                    {tab.locked && (
+                      <Lock size={13} className="sm:hidden opacity-75 flex-shrink-0" />
+                    )}
                   </div>
-                  <div className="min-w-0 flex-1">
+
+                  <div className="w-full min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black uppercase tracking-wider truncate">
+                      <span className="text-xs font-black uppercase tracking-wide leading-tight">
                         {tab.label}
                       </span>
-                      {tab.locked && <Lock size={11} className="opacity-70 flex-shrink-0" />}
+                      {tab.locked && (
+                        <Lock size={11} className="hidden sm:inline opacity-75 flex-shrink-0" />
+                      )}
                     </div>
                     <p
-                      className={`text-[10px] font-semibold truncate mt-0.5 ${
-                        active ? "text-white/85" : "text-stone-500"
+                      className={`text-[11px] font-semibold leading-snug mt-0.5 ${
+                        active ? "text-white/85" : "text-stone-400"
                       }`}
                     >
                       {tab.sub}
