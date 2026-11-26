@@ -149,6 +149,7 @@ const ALL_PROGRAMS = [
 
 const ADMIN_EMAILS = ["getsurefixedgames@gmail.com", "smootyefects@gmail.com"];
 const WHATSAPP_NUMBER = "38977852645";
+const DEFAULT_REST_SECONDS = 120; // 2 минути
 
 type ProgramStatus = {
   status: string;
@@ -174,7 +175,7 @@ function DashboardContent() {
   const [selectedDayIdx, setSelectedDayIdx] = useState<number>(() => (new Date().getDay() + 6) % 7);
   const [nutritionDayIdx, setNutritionDayIdx] = useState<number>(() => (new Date().getDay() + 6) % 7);
 
-  // Автоматски дефинирано од купените програми/исхрана (Men = сино, Women = розево)
+  // Автоматски дефинирано од купената програма (Men = сино, Women = розево)
   const [userGender, setUserGender] = useState<"men" | "women">("men");
 
   const [activeTab, setActiveTab] = useState<DashboardTab>("programs");
@@ -186,7 +187,7 @@ function DashboardContent() {
   const [isLoadingDB, setIsLoadingDB] = useState(true);
 
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [timerSeconds, setTimerSeconds] = useState<number>(60);
+  const [timerSeconds, setTimerSeconds] = useState<number>(DEFAULT_REST_SECONDS);
   const [timerRunning, setTimerRunning] = useState<boolean>(false);
 
   const [nutritionMode, setNutritionMode] = useState<"cutting" | "bulking" | "vegan">("cutting");
@@ -194,8 +195,8 @@ function DashboardContent() {
 
   const isMen = userGender === "men";
 
-  // Gender Color Theme System (Blue for Men, Pink for Women)
-  const theme = isMen
+  // Тема за Programs: Men = Сино, Women = Розово
+  const programTheme = isMen
     ? {
         primaryBg: "bg-blue-600",
         primaryHover: "hover:bg-blue-700",
@@ -224,6 +225,40 @@ function DashboardContent() {
         shadow: "shadow-pink-500/25",
         badgeDark: "bg-pink-500/20 text-pink-300 border-pink-500/30",
       };
+
+  // Активна боја на хедерот и breadcrumb според отворениот таб
+  const headerAccent =
+    activeTab === "nutrition"
+      ? {
+          text: "text-emerald-600",
+          softBg: "bg-emerald-50",
+          softBorder: "border-emerald-200",
+          border: "border-emerald-500",
+          ring: "ring-emerald-500/40",
+          glow: "bg-emerald-500/25",
+          badgeDark: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+        }
+      : activeTab === "coaching"
+      ? {
+          text: "text-orange-600",
+          softBg: "bg-orange-50",
+          softBorder: "border-orange-200",
+          border: "border-orange-500",
+          ring: "ring-orange-500/40",
+          glow: "bg-orange-500/25",
+          badgeDark: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+        }
+      : activeTab === "profile"
+      ? {
+          text: "text-red-700",
+          softBg: "bg-red-50",
+          softBorder: "border-red-200",
+          border: "border-red-600",
+          ring: "ring-red-600/40",
+          glow: "bg-red-700/25",
+          badgeDark: "bg-red-600/20 text-red-300 border-red-600/30",
+        }
+      : programTheme;
 
   useEffect(() => {
     const tabParam = searchParams.get("tab") as DashboardTab | null;
@@ -309,8 +344,6 @@ function DashboardContent() {
         setOrdersHistory(data);
         const statuses: Record<string, ProgramStatus> = {};
 
-        // Автоматско откривање на пол од купената програма или nutrition план
-        // Приоритет имаат одобрените нарачки, па потоа поновите нарачки
         let detectedGender: "men" | "women" | null = null;
         const sortedForDetection = [...data].sort((a: any, b: any) => {
           if (a.status === "completed" && b.status !== "completed") return -1;
@@ -464,15 +497,21 @@ function DashboardContent() {
     (slot) => checkedItems[`meal-${nutritionMode}-d${nutritionDayIdx}-${slot.id}`]
   ).length;
   const mealsProgressPercent = Math.round((mealsEatenCount / activeMealSlots.length) * 100);
-
   const totalMacroGrams = dailyTotals.protein + dailyTotals.carbs + dailyTotals.fats || 1;
 
+  // 4 табови со точно зададени бои:
+  // Programs = Сино (машко) / Розово (женско)
+  // Nutrition = Зелено
+  // 1-on-1 Coaching = Портокалово
+  // Profile & Orders = Црвено
   const navTabs: {
     id: DashboardTab;
     label: string;
     sub: string;
     icon: any;
     locked: boolean;
+    activeClass: string;
+    idleIconClass: string;
   }[] = [
     {
       id: "programs",
@@ -480,6 +519,8 @@ function DashboardContent() {
       sub: `${weeklyFreq} Weekly Split`,
       icon: Dumbbell,
       locked: !hasTrainingAccess,
+      activeClass: `bg-gradient-to-r ${programTheme.primaryGradient} text-white ${programTheme.border} shadow-lg ${programTheme.shadow}`,
+      idleIconClass: isMen ? "text-blue-400" : "text-pink-400",
     },
     {
       id: "nutrition",
@@ -487,6 +528,9 @@ function DashboardContent() {
       sub: "Meals & Macros",
       icon: Utensils,
       locked: !hasNutritionAccess,
+      activeClass:
+        "bg-gradient-to-r from-emerald-600 to-green-600 text-white border-emerald-500 shadow-lg shadow-emerald-600/25",
+      idleIconClass: "text-emerald-400",
     },
     {
       id: "coaching",
@@ -494,6 +538,9 @@ function DashboardContent() {
       sub: "Direct WhatsApp",
       icon: Sparkles,
       locked: false,
+      activeClass:
+        "bg-gradient-to-r from-orange-500 to-amber-500 text-white border-orange-400 shadow-lg shadow-orange-500/25",
+      idleIconClass: "text-orange-400",
     },
     {
       id: "profile",
@@ -501,6 +548,9 @@ function DashboardContent() {
       sub: `${ordersHistory.length} Orders`,
       icon: User,
       locked: false,
+      activeClass:
+        "bg-gradient-to-r from-red-700 to-red-800 text-white border-red-600 shadow-lg shadow-red-800/25",
+      idleIconClass: "text-red-400",
     },
   ];
 
@@ -536,7 +586,7 @@ function DashboardContent() {
               <ChevronRight size={13} />
               <span className="text-stone-600">Member Hub</span>
               <ChevronRight size={13} />
-              <span className={`font-black uppercase ${theme.text}`}>
+              <span className={`font-black uppercase ${headerAccent.text}`}>
                 {TAB_LABELS[activeTab]}
               </span>
               {(activeTab === "programs" || activeTab === "nutrition") && (
@@ -551,25 +601,25 @@ function DashboardContent() {
           </div>
 
           <span
-            className={`inline-flex items-center gap-1.5 ${theme.softBg} ${theme.text} border ${theme.softBorder} text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl`}
+            className={`inline-flex items-center gap-1.5 ${headerAccent.softBg} ${headerAccent.text} border ${headerAccent.softBorder} text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-colors`}
           >
             <Calendar size={12} /> Today: {todayInfo.full}
           </span>
         </div>
 
-        {/* 2. ATHLETE HUB HEADER (NO MANUAL GENDER TOGGLE — AUTO FROM PURCHASE) */}
+        {/* 2. ATHLETE HUB HEADER */}
         <div className="bg-stone-950 text-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-stone-800 relative overflow-hidden">
           <div
-            className={`absolute -right-24 -top-24 w-80 h-80 blur-[130px] rounded-full pointer-events-none ${theme.glow}`}
+            className={`absolute -right-24 -top-24 w-80 h-80 blur-[130px] rounded-full pointer-events-none transition-colors duration-500 ${headerAccent.glow}`}
           />
           <div
-            className={`absolute -left-24 -bottom-24 w-64 h-64 blur-[120px] rounded-full pointer-events-none opacity-60 ${theme.glow}`}
+            className={`absolute -left-24 -bottom-24 w-64 h-64 blur-[120px] rounded-full pointer-events-none opacity-60 transition-colors duration-500 ${headerAccent.glow}`}
           />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div className="flex items-center gap-4 sm:gap-5">
               <div
-                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 ${theme.border} ring-4 ${theme.ring} bg-stone-900 flex-shrink-0 shadow-lg`}
+                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 ${headerAccent.border} ring-4 ${headerAccent.ring} bg-stone-900 flex-shrink-0 shadow-lg transition-all duration-300`}
               >
                 <img
                   src={user.imageUrl}
@@ -581,7 +631,7 @@ function DashboardContent() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${theme.badgeDark}`}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${headerAccent.badgeDark}`}
                   >
                     <Zap size={10} />
                     {isAdmin ? "Coach / Admin Access" : "Active Member Hub"}
@@ -615,12 +665,11 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* 3. SEGMENTED APP NAVIGATION */}
+          {/* 3. COLOR-CODED SEGMENTED APP NAVIGATION */}
           <div className="relative z-10 mt-6 pt-5 border-t border-stone-800/90 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {navTabs.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
-              const activeStyles = `bg-gradient-to-r ${theme.primaryGradient} text-white ${theme.border} shadow-lg ${theme.shadow}`;
 
               return (
                 <button
@@ -629,7 +678,7 @@ function DashboardContent() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`group flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                     active
-                      ? activeStyles
+                      ? tab.activeClass
                       : "bg-stone-900/70 border-stone-800 text-stone-300 hover:bg-stone-800/90 hover:text-white"
                   }`}
                 >
@@ -637,7 +686,7 @@ function DashboardContent() {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                       active
                         ? "bg-white/20 text-white"
-                        : "bg-stone-800 text-stone-400 group-hover:text-white"
+                        : `bg-stone-800 ${tab.idleIconClass} group-hover:text-white`
                     }`}
                   >
                     <Icon size={18} />
@@ -651,7 +700,7 @@ function DashboardContent() {
                     </div>
                     <p
                       className={`text-[10px] font-semibold truncate mt-0.5 ${
-                        active ? "text-white/80" : "text-stone-500"
+                        active ? "text-white/85" : "text-stone-500"
                       }`}
                     >
                       {tab.sub}
@@ -679,7 +728,7 @@ function DashboardContent() {
         )}
 
         {/* ============================================================ */}
-        {/* TAB 1: PROGRAMS (4x RECOMMENDED + CAUTIONARY 3x/2x FALLBACK) */}
+        {/* TAB 1: PROGRAMS (BLUE FOR MEN / PINK FOR WOMEN)              */}
         {/* ============================================================ */}
         {activeTab === "programs" &&
           (hasTrainingAccess ? (
@@ -687,7 +736,9 @@ function DashboardContent() {
               <div className="bg-white border border-stone-200/90 rounded-3xl p-5 sm:p-7 shadow-sm space-y-5">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div>
-                    <div className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${theme.text} mb-1`}>
+                    <div
+                      className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${programTheme.text} mb-1`}
+                    >
                       <Trophy size={13} /> Weekly Training Schedule
                     </div>
                     <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-stone-950">
@@ -703,7 +754,7 @@ function DashboardContent() {
                     </p>
                   </div>
 
-                  {/* 4x RECOMMENDED + BUSY-WEEK FALLBACK CONTROL */}
+                  {/* 4x RECOMMENDED + SHORT ON TIME */}
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
@@ -713,7 +764,7 @@ function DashboardContent() {
                       }}
                       className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                         weeklyFreq === "4x"
-                          ? `${theme.primaryBg} text-white shadow-md ${theme.shadow}`
+                          ? `${programTheme.primaryBg} text-white shadow-md ${programTheme.shadow}`
                           : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                       }`}
                     >
@@ -734,7 +785,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {/* CAUTIONARY PANEL FOR 3x / 2x REDUCED SCHEDULE */}
+                {/* CAUTIONARY PANEL FOR 2x / 3x (SWAPPED ORDER: 2x FIRST, 3x SECOND) */}
                 {(showReducedOptions || weeklyFreq !== "4x") && (
                   <div className="bg-amber-50/90 border border-amber-300/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-start gap-3">
@@ -749,23 +800,12 @@ function DashboardContent() {
                             : `Reduced Schedule Active (${weeklyFreq}/week)`}
                         </p>
                         <p className="text-[11px] font-medium text-amber-800 mt-0.5 leading-relaxed">
-                          Use 3x (Mon, Wed, Fri) or 2x (Tue, Wed) only during busy weeks when you cannot make all 4 sessions. Return to 4x as soon as your schedule opens up.
+                          Use 2x (Mon, Thu) or 3x (Mon, Wed, Fri) only during busy weeks when you cannot make all 4 sessions. Return to 4x as soon as your schedule opens up.
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleSelectFreq("3x")}
-                        className={`px-3.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border ${
-                          weeklyFreq === "3x"
-                            ? "bg-amber-600 text-white border-amber-600 shadow-sm"
-                            : "bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
-                        }`}
-                      >
-                        3x / Week
-                      </button>
                       <button
                         type="button"
                         onClick={() => handleSelectFreq("2x")}
@@ -776,6 +816,17 @@ function DashboardContent() {
                         }`}
                       >
                         2x / Week
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectFreq("3x")}
+                        className={`px-3.5 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border ${
+                          weeklyFreq === "3x"
+                            ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                            : "bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
+                        }`}
+                      >
+                        3x / Week
                       </button>
                     </div>
                   </div>
@@ -800,16 +851,18 @@ function DashboardContent() {
                         onClick={() => setSelectedDayIdx(day.index)}
                         className={`relative rounded-2xl p-2 sm:p-3.5 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border-2 ${
                           isSelected
-                            ? `${theme.primaryBg} text-white ${theme.border} shadow-lg ${theme.shadow} scale-[1.02]`
+                            ? `${programTheme.primaryBg} text-white ${programTheme.border} shadow-lg ${programTheme.shadow} scale-[1.02]`
                             : isToday
-                            ? `${theme.softBg} text-stone-950 ${theme.border}`
+                            ? `${programTheme.softBg} text-stone-950 ${programTheme.border}`
                             : "bg-stone-50 text-stone-600 border-stone-200/70 hover:bg-stone-100 hover:text-stone-950"
                         }`}
                       >
                         {isToday && (
                           <span
                             className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm ${
-                              isSelected ? "bg-stone-950 text-white" : `${theme.primaryBg} text-white`
+                              isSelected
+                                ? "bg-stone-950 text-white"
+                                : `${programTheme.primaryBg} text-white`
                             }`}
                           >
                             Today
@@ -829,7 +882,7 @@ function DashboardContent() {
                           ) : workout ? (
                             <Dumbbell
                               size={15}
-                              className={isSelected ? "text-white" : theme.text}
+                              className={isSelected ? "text-white" : programTheme.text}
                             />
                           ) : (
                             <HeartPulse
@@ -856,7 +909,7 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => setSelectedDayIdx(todayIdx)}
-                      className={`text-[11px] font-black uppercase tracking-wider ${theme.text} hover:underline cursor-pointer`}
+                      className={`text-[11px] font-black uppercase tracking-wider ${programTheme.text} hover:underline cursor-pointer`}
                     >
                       ← Jump back to Today ({todayInfo.full})
                     </button>
@@ -871,7 +924,7 @@ function DashboardContent() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
                         <span
-                          className={`${theme.softBg} ${theme.text} text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md`}
+                          className={`${programTheme.softBg} ${programTheme.text} text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md`}
                         >
                           {selectedDayInfo.full} • {weeklyFreq} Plan
                         </span>
@@ -889,12 +942,16 @@ function DashboardContent() {
                       </p>
                     </div>
 
-                    {/* REST TIMER */}
+                    {/* REST TIMER (2:00 DEFAULT) */}
                     <div className="bg-stone-950 text-white rounded-2xl p-3.5 px-4 flex items-center justify-between sm:justify-start gap-4 self-start lg:self-auto w-full sm:w-auto">
                       <div className="flex items-center gap-2.5">
                         <Timer
                           size={18}
-                          className={timerRunning ? `${theme.textLight} animate-pulse` : "text-stone-400"}
+                          className={
+                            timerRunning
+                              ? `${programTheme.textLight} animate-pulse`
+                              : "text-stone-400"
+                          }
                         />
                         <div>
                           <p className="text-[9px] font-black uppercase tracking-widest text-stone-400">
@@ -910,7 +967,7 @@ function DashboardContent() {
                         <button
                           type="button"
                           onClick={() => setTimerRunning((r) => !r)}
-                          className={`w-9 h-9 rounded-xl ${theme.primaryBg} ${theme.primaryHover} text-white flex items-center justify-center transition-colors cursor-pointer`}
+                          className={`w-9 h-9 rounded-xl ${programTheme.primaryBg} ${programTheme.primaryHover} text-white flex items-center justify-center transition-colors cursor-pointer`}
                           title={timerRunning ? "Pause Timer" : "Start Timer"}
                         >
                           {timerRunning ? <Pause size={15} /> : <Play size={15} />}
@@ -919,10 +976,10 @@ function DashboardContent() {
                           type="button"
                           onClick={() => {
                             setTimerRunning(false);
-                            setTimerSeconds(60);
+                            setTimerSeconds(DEFAULT_REST_SECONDS);
                           }}
                           className="w-9 h-9 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 flex items-center justify-center transition-colors cursor-pointer"
-                          title="Reset Timer"
+                          title="Reset to 2:00"
                         >
                           <RotateCcw size={14} />
                         </button>
@@ -934,14 +991,18 @@ function DashboardContent() {
                   <div className="mb-6">
                     <div className="flex justify-between text-[11px] font-black uppercase tracking-wider mb-2">
                       <span className="text-stone-500">Session Progress</span>
-                      <span className={dayProgressPercent === 100 ? "text-emerald-600" : theme.text}>
+                      <span
+                        className={
+                          dayProgressPercent === 100 ? "text-emerald-600" : programTheme.text
+                        }
+                      >
                         {completedExCount}/{selectedWorkout.exercises.length} Exercises ({dayProgressPercent}%)
                       </span>
                     </div>
                     <div className="h-3 w-full bg-stone-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          dayProgressPercent === 100 ? "bg-emerald-500" : theme.primaryBg
+                          dayProgressPercent === 100 ? "bg-emerald-500" : programTheme.primaryBg
                         }`}
                         style={{ width: `${dayProgressPercent}%` }}
                       />
@@ -999,7 +1060,7 @@ function DashboardContent() {
                                   0{idx + 1}
                                 </span>
                                 <span
-                                  className={`text-[10px] font-black uppercase tracking-widest ${theme.text}`}
+                                  className={`text-[10px] font-black uppercase tracking-widest ${programTheme.text}`}
                                 >
                                   {ex.muscleGroup}
                                 </span>
@@ -1022,12 +1083,12 @@ function DashboardContent() {
                                   role="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    startRestTimer(ex.restSeconds);
+                                    startRestTimer(DEFAULT_REST_SECONDS);
                                   }}
-                                  className={`inline-flex items-center gap-1 ${theme.softBg} ${theme.text} border ${theme.softBorder} hover:bg-stone-950 hover:text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg transition-colors cursor-pointer`}
-                                  title="Tap to start rest timer"
+                                  className={`inline-flex items-center gap-1 ${programTheme.softBg} ${programTheme.text} border ${programTheme.softBorder} hover:bg-stone-950 hover:text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-lg transition-colors cursor-pointer`}
+                                  title="Tap to start 2:00 rest timer"
                                 >
-                                  <Timer size={11} /> Rest: {ex.rest}
+                                  <Timer size={11} /> Rest: 2 min
                                 </span>
                               </div>
                             </div>
@@ -1038,7 +1099,7 @@ function DashboardContent() {
                               href={ex.videoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`inline-flex items-center gap-1.5 bg-stone-950 ${theme.primaryHover} text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all`}
+                              className={`inline-flex items-center gap-1.5 bg-stone-950 ${programTheme.primaryHover} text-white text-[10px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all`}
                             >
                               <PlayCircle size={14} /> Watch Video
                             </a>
@@ -1064,7 +1125,7 @@ function DashboardContent() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-6 mb-6">
                     <div>
                       <span
-                        className={`inline-flex items-center gap-1.5 ${theme.softBg} ${theme.text} text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2`}
+                        className={`inline-flex items-center gap-1.5 ${programTheme.softBg} ${programTheme.text} text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-2`}
                       >
                         <HeartPulse size={12} /> {selectedDayInfo.full} • Rest Day
                       </span>
@@ -1079,7 +1140,7 @@ function DashboardContent() {
                     <button
                       type="button"
                       onClick={() => setSelectedDayIdx(nextWorkoutDayIdx)}
-                      className={`inline-flex items-center justify-center gap-2 ${theme.primaryBg} ${theme.primaryHover} text-white text-xs font-black uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all cursor-pointer flex-shrink-0`}
+                      className={`inline-flex items-center justify-center gap-2 ${programTheme.primaryBg} ${programTheme.primaryHover} text-white text-xs font-black uppercase tracking-wider px-5 py-3.5 rounded-xl transition-all cursor-pointer flex-shrink-0`}
                     >
                       Next Workout ({WEEK_DAYS[nextWorkoutDayIdx].short})
                       <ChevronRight size={15} />
@@ -1150,7 +1211,7 @@ function DashboardContent() {
                             <a
                               href={program.downloadPath}
                               download
-                              className={`flex-shrink-0 inline-flex items-center gap-1.5 ${theme.primaryBg} ${theme.primaryHover} text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all active:scale-95`}
+                              className={`flex-shrink-0 inline-flex items-center gap-1.5 ${programTheme.primaryBg} ${programTheme.primaryHover} text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-all active:scale-95`}
                             >
                               <Download size={13} /> PDF
                             </a>
@@ -1164,14 +1225,14 @@ function DashboardContent() {
             </div>
           ) : (
             <div className="bg-white border-2 border-dashed border-stone-300 rounded-3xl p-12 text-center">
-              <Lock className={`mx-auto ${theme.text} mb-4`} size={32} />
+              <Lock className={`mx-auto ${programTheme.text} mb-4`} size={32} />
               <h3 className="font-black uppercase text-xl mb-2">Training Programs Locked</h3>
               <p className="text-xs text-stone-500 max-w-md mx-auto mb-6">
                 Purchase any Gym or Home Training Plan (or Complete Transformation Package) to unlock your weekly planner, checkboxes, PDFs, and exercise videos.
               </p>
               <Link
                 href="/#programs"
-                className={`inline-block ${theme.primaryBg} ${theme.primaryHover} text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl`}
+                className={`inline-block ${programTheme.primaryBg} ${programTheme.primaryHover} text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl`}
               >
                 Choose a Program
               </Link>
@@ -1179,7 +1240,7 @@ function DashboardContent() {
           ))}
 
         {/* ============================================================ */}
-        {/* TAB 2: UPGRADED INTERACTIVE NUTRITION (STACKED INGREDIENTS)  */}
+        {/* TAB 2: NUTRITION (FULL GREEN THEME — MEN & WOMEN)            */}
         {/* ============================================================ */}
         {activeTab === "nutrition" &&
           (hasNutritionAccess ? (
@@ -1188,12 +1249,12 @@ function DashboardContent() {
               <div className="bg-white border border-stone-200/90 rounded-3xl p-5 sm:p-7 shadow-sm space-y-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div>
-                    <div className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest ${theme.text} mb-1`}>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-700 mb-1">
                       <ChefHat size={13} /> Daily Fuel Blueprint
                     </div>
                     <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-stone-950">
                       {nutritionDayInfo.full} —{" "}
-                      <span className={theme.text}>{nutritionMode}</span>
+                      <span className="text-emerald-600">{nutritionMode}</span>
                     </h2>
                     <p className="text-xs font-bold text-stone-500 mt-0.5">
                       {mealsEatenCount} of {activeMealSlots.length} meals completed ({mealsProgressPercent}%)
@@ -1208,7 +1269,7 @@ function DashboardContent() {
                           onClick={() => setNutritionMode(mode)}
                           className={`px-3.5 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                             nutritionMode === mode
-                              ? `${theme.primaryBg} text-white shadow-sm`
+                              ? "bg-emerald-600 text-white shadow-sm"
                               : "text-stone-600 hover:text-stone-950"
                           }`}
                         >
@@ -1220,7 +1281,7 @@ function DashboardContent() {
                     <a
                       href={`/downloads/${nutritionMode}-plan.pdf`}
                       download
-                      className={`inline-flex items-center gap-1.5 bg-stone-950 ${theme.primaryHover} text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all`}
+                      className="inline-flex items-center gap-1.5 bg-stone-950 hover:bg-emerald-700 text-white text-[11px] font-black uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all"
                     >
                       <Download size={14} /> PDF
                     </a>
@@ -1243,16 +1304,16 @@ function DashboardContent() {
                         onClick={() => setNutritionDayIdx(day.index)}
                         className={`relative rounded-2xl py-2.5 px-1 sm:p-3 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border-2 ${
                           isSelected
-                            ? `${theme.primaryBg} text-white ${theme.border} shadow-lg ${theme.shadow} scale-[1.02]`
+                            ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/25 scale-[1.02]"
                             : isToday
-                            ? `${theme.softBg} text-stone-950 ${theme.border}`
+                            ? "bg-emerald-50 text-stone-950 border-emerald-500"
                             : "bg-stone-50 text-stone-600 border-stone-200/70 hover:bg-stone-100"
                         }`}
                       >
                         {isToday && (
                           <span
                             className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm ${
-                              isSelected ? "bg-stone-950 text-white" : `${theme.primaryBg} text-white`
+                              isSelected ? "bg-stone-950 text-white" : "bg-emerald-600 text-white"
                             }`}
                           >
                             Today
@@ -1269,7 +1330,7 @@ function DashboardContent() {
                         ) : (
                           <Utensils
                             size={13}
-                            className={isSelected ? "text-white/90" : theme.text}
+                            className={isSelected ? "text-white/90" : "text-emerald-600"}
                           />
                         )}
                       </button>
@@ -1278,30 +1339,24 @@ function DashboardContent() {
                 </div>
 
                 {/* DAILY MEALS PROGRESS BAR */}
-                <div>
-                  <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        mealsProgressPercent === 100 ? "bg-emerald-500" : theme.primaryBg
-                      }`}
-                      style={{ width: `${mealsProgressPercent}%` }}
-                    />
-                  </div>
+                <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                    style={{ width: `${mealsProgressPercent}%` }}
+                  />
                 </div>
               </div>
 
-              {/* DAILY MACRO DASHBOARD BANNER */}
+              {/* DAILY MACRO DASHBOARD BANNER (GREEN ACCENTS) */}
               <div className="bg-stone-950 text-white rounded-3xl p-5 sm:p-7 shadow-xl border border-stone-800 relative overflow-hidden">
-                <div
-                  className={`absolute -right-20 -bottom-20 w-64 h-64 blur-[110px] rounded-full pointer-events-none ${theme.glow}`}
-                />
+                <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-500/25 blur-[110px] rounded-full pointer-events-none" />
                 <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                   <div className="flex items-center gap-4">
-                    <div className={`w-14 h-14 rounded-2xl ${theme.primaryBg} text-white flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-600/30">
                       <Flame size={26} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
                         {nutritionDayInfo.full} Daily Total
                       </p>
                       <p className="text-3xl sm:text-4xl font-black leading-none mt-1">
@@ -1332,7 +1387,7 @@ function DashboardContent() {
 
                     <div className="bg-stone-900/90 border border-stone-800 rounded-2xl p-3.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-sky-400">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-green-300">
                           Carbs
                         </span>
                         <span className="text-[9px] font-bold text-stone-500">
@@ -1342,7 +1397,7 @@ function DashboardContent() {
                       <p className="text-xl font-black mt-1">{dailyTotals.carbs}g</p>
                       <div className="h-1.5 bg-stone-800 rounded-full mt-2 overflow-hidden">
                         <div
-                          className="h-full bg-sky-400 rounded-full transition-all duration-500"
+                          className="h-full bg-green-400 rounded-full transition-all duration-500"
                           style={{ width: `${(dailyTotals.carbs / totalMacroGrams) * 100}%` }}
                         />
                       </div>
@@ -1350,7 +1405,7 @@ function DashboardContent() {
 
                     <div className="bg-stone-900/90 border border-stone-800 rounded-2xl p-3.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-amber-400">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-teal-300">
                           Fats
                         </span>
                         <span className="text-[9px] font-bold text-stone-500">
@@ -1360,7 +1415,7 @@ function DashboardContent() {
                       <p className="text-xl font-black mt-1">{dailyTotals.fats}g</p>
                       <div className="h-1.5 bg-stone-800 rounded-full mt-2 overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                          className="h-full bg-teal-400 rounded-full transition-all duration-500"
                           style={{ width: `${(dailyTotals.fats / totalMacroGrams) * 100}%` }}
                         />
                       </div>
@@ -1369,7 +1424,7 @@ function DashboardContent() {
                 </div>
               </div>
 
-              {/* INTERACTIVE MEAL CARDS WITH SEPARATE STACKED INGREDIENTS LIST */}
+              {/* INTERACTIVE MEAL CARDS WITH STACKED INGREDIENTS (GREEN THEME) */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {activeMealSlots.map((slot) => {
                   const currentIdx = getMealOptionIndex(
@@ -1381,7 +1436,6 @@ function DashboardContent() {
                   const mealCheckKey = `meal-${nutritionMode}-d${nutritionDayIdx}-${slot.id}`;
                   const isEaten = !!checkedItems[mealCheckKey];
 
-                  // Разделување на состојките за да НЕ бидат во еден inline ред
                   const ingredientList = meal.ingredients
                     .split(/,|\+/)
                     .map((item) => item.trim())
@@ -1396,8 +1450,8 @@ function DashboardContent() {
                       key={slot.id}
                       className={`rounded-3xl border-2 overflow-hidden transition-all duration-300 flex flex-col justify-between ${
                         isEaten
-                          ? "bg-emerald-50/40 border-emerald-400 shadow-sm"
-                          : "bg-white border-stone-200/90 hover:border-stone-300 shadow-sm hover:shadow-xl"
+                          ? "bg-emerald-50/50 border-emerald-500 shadow-sm"
+                          : "bg-white border-emerald-200/80 hover:border-emerald-400 shadow-sm hover:shadow-xl"
                       }`}
                     >
                       {/* TOP HEADER BAR */}
@@ -1407,7 +1461,7 @@ function DashboardContent() {
                             {slot.time}
                           </span>
                           <div className="min-w-0">
-                            <p className={`text-[10px] font-black uppercase tracking-widest ${theme.text} leading-none`}>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700 leading-none">
                               {slot.mealNumber}
                             </p>
                             <p className="text-xs font-black uppercase text-stone-700 truncate mt-0.5">
@@ -1421,7 +1475,7 @@ function DashboardContent() {
                           onClick={() =>
                             handleSwapMeal(nutritionDayIdx, slot.id, slot.options.length)
                           }
-                          className={`inline-flex items-center gap-1.5 ${theme.softBg} ${theme.text} hover:bg-stone-950 hover:text-white border ${theme.softBorder} text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all active:scale-95 cursor-pointer flex-shrink-0`}
+                          className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[10px] font-black uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all active:scale-95 cursor-pointer flex-shrink-0"
                         >
                           <RefreshCw size={12} />
                           Swap ({currentIdx + 1}/{slot.options.length})
@@ -1438,40 +1492,36 @@ function DashboardContent() {
                           >
                             {meal.name}
                           </h3>
-                          <span className="flex-shrink-0 bg-stone-100 text-stone-950 text-xs font-black px-3 py-1.5 rounded-xl">
+                          <span className="flex-shrink-0 bg-emerald-50 border border-emerald-200/70 text-emerald-900 text-xs font-black px-3 py-1.5 rounded-xl">
                             {meal.kcal} kcal
                           </span>
                         </div>
 
-                        {/* STACKED INGREDIENTS PANEL (NOT INLINE) */}
-                        <div className="bg-stone-50 border border-stone-200/70 rounded-2xl p-4">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-3">
+                        {/* STACKED INGREDIENTS PANEL */}
+                        <div className="bg-emerald-50/35 border border-emerald-200/60 rounded-2xl p-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700 mb-3">
                             Ingredients
                           </p>
                           <ul className="space-y-2">
                             {ingredientList.map((ingredient, i) => (
                               <li
                                 key={i}
-                                className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-stone-800 bg-white border border-stone-200/70 rounded-xl px-3.5 py-2.5"
+                                className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-stone-800 bg-white border border-emerald-100 rounded-xl px-3.5 py-2.5"
                               >
-                                <span
-                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                    isEaten ? "bg-emerald-500" : theme.primaryBg
-                                  }`}
-                                />
+                                <span className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-500" />
                                 <span className="capitalize">{ingredient}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
 
-                        {/* VISUAL MACRO METERS */}
+                        {/* VISUAL MACRO METERS (GREEN PALETTE) */}
                         <div className="grid grid-cols-3 gap-2.5">
-                          <div className="bg-emerald-50/70 border border-emerald-200/60 rounded-2xl p-3">
+                          <div className="bg-emerald-50/80 border border-emerald-200/70 rounded-2xl p-3">
                             <p className="text-[9px] font-black uppercase tracking-wider text-emerald-700">
                               Protein
                             </p>
-                            <p className="text-base font-black text-emerald-900 mt-0.5">
+                            <p className="text-base font-black text-emerald-950 mt-0.5">
                               {meal.protein}g
                             </p>
                             <div className="h-1.5 bg-emerald-200/70 rounded-full mt-2 overflow-hidden">
@@ -1482,31 +1532,31 @@ function DashboardContent() {
                             </div>
                           </div>
 
-                          <div className="bg-sky-50/70 border border-sky-200/60 rounded-2xl p-3">
-                            <p className="text-[9px] font-black uppercase tracking-wider text-sky-700">
+                          <div className="bg-green-50/80 border border-green-200/70 rounded-2xl p-3">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-green-700">
                               Carbs
                             </p>
-                            <p className="text-base font-black text-sky-900 mt-0.5">
+                            <p className="text-base font-black text-green-950 mt-0.5">
                               {meal.carbs}g
                             </p>
-                            <div className="h-1.5 bg-sky-200/70 rounded-full mt-2 overflow-hidden">
+                            <div className="h-1.5 bg-green-200/70 rounded-full mt-2 overflow-hidden">
                               <div
-                                className="h-full bg-sky-600 rounded-full"
+                                className="h-full bg-green-600 rounded-full"
                                 style={{ width: `${cShare}%` }}
                               />
                             </div>
                           </div>
 
-                          <div className="bg-amber-50/70 border border-amber-200/60 rounded-2xl p-3">
-                            <p className="text-[9px] font-black uppercase tracking-wider text-amber-700">
+                          <div className="bg-teal-50/80 border border-teal-200/70 rounded-2xl p-3">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-teal-700">
                               Fats
                             </p>
-                            <p className="text-base font-black text-amber-900 mt-0.5">
+                            <p className="text-base font-black text-teal-950 mt-0.5">
                               {meal.fats}g
                             </p>
-                            <div className="h-1.5 bg-amber-200/70 rounded-full mt-2 overflow-hidden">
+                            <div className="h-1.5 bg-teal-200/70 rounded-full mt-2 overflow-hidden">
                               <div
-                                className="h-full bg-amber-500 rounded-full"
+                                className="h-full bg-teal-600 rounded-full"
                                 style={{ width: `${fShare}%` }}
                               />
                             </div>
@@ -1522,7 +1572,7 @@ function DashboardContent() {
                           className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] ${
                             isEaten
                               ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                              : "bg-stone-100 hover:bg-stone-950 text-stone-700 hover:text-white"
+                              : "bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-200"
                           }`}
                         >
                           {isEaten ? (
@@ -1542,15 +1592,15 @@ function DashboardContent() {
               </div>
             </div>
           ) : (
-            <div className="bg-white border-2 border-dashed border-stone-300 rounded-3xl p-12 text-center">
-              <Lock className={`mx-auto ${theme.text} mb-4`} size={32} />
+            <div className="bg-white border-2 border-dashed border-emerald-200 rounded-3xl p-12 text-center">
+              <Lock className="mx-auto text-emerald-600 mb-4" size={32} />
               <h3 className="font-black uppercase text-xl mb-2">Nutrition Plans Locked</h3>
               <p className="text-xs text-stone-500 max-w-md mx-auto mb-6">
                 Purchase a Bulking, Cutting, Vegan Nutrition Plan or Complete Transformation Package to unlock daily meals and instant meal swaps.
               </p>
               <Link
                 href="/#programs"
-                className={`inline-block ${theme.primaryBg} ${theme.primaryHover} text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl`}
+                className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl"
               >
                 Explore Nutrition Plans
               </Link>
@@ -1558,36 +1608,37 @@ function DashboardContent() {
           ))}
 
         {/* ============================================================ */}
-        {/* TAB 3: 1-ON-1 COACHING                                       */}
+        {/* TAB 3: 1-ON-1 COACHING (ORANGE THEME)                        */}
         {/* ============================================================ */}
         {activeTab === "coaching" && (
-          <div className="bg-stone-950 text-white rounded-3xl p-8 sm:p-10 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-7 space-y-4">
-              <span className="inline-block px-3 py-1 rounded-full bg-[#25D366]/15 text-[#25D366] text-[10px] font-black uppercase tracking-widest">
+          <div className="bg-stone-950 text-white rounded-3xl p-8 sm:p-10 shadow-xl border border-orange-500/30 relative overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="absolute -right-24 -top-24 w-72 h-72 bg-orange-500/20 blur-[120px] rounded-full pointer-events-none" />
+            <div className="lg:col-span-7 space-y-4 relative z-10">
+              <span className="inline-block px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-400 text-[10px] font-black uppercase tracking-widest">
                 Direct Coach Line
               </span>
               <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter">
                 1-on-1 Coaching With{" "}
-                <span className={theme.textLight}>Andrej Angjeleski</span>
+                <span className="text-orange-400">Andrej Angjeleski</span>
               </h2>
               <p className="text-xs sm:text-sm text-stone-400 leading-relaxed max-w-xl">
                 Already a member and want weekly check-ins, custom macro adjustments, or exercise form reviews? Message Coach Andrej directly on WhatsApp.
               </p>
             </div>
-            <div className="lg:col-span-5 flex flex-col gap-3">
+            <div className="lg:col-span-5 flex flex-col gap-3 relative z-10">
               <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
                   `Hi Andrej! I'm a member on Evolution Body (${user.primaryEmailAddress?.emailAddress}) and I'd like to discuss 1-on-1 Online Coaching.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] hover:bg-[#1ebe5d] text-stone-950 font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
               >
                 Message on WhatsApp <ExternalLink size={15} />
               </a>
               <Link
                 href="/coaching"
-                className="w-full bg-white/10 hover:bg-white hover:text-stone-950 text-white font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all"
+                className="w-full bg-white/10 hover:bg-orange-500/20 hover:border-orange-400/50 border border-white/15 text-white font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all"
               >
                 View Coaching Details
               </Link>
@@ -1596,13 +1647,13 @@ function DashboardContent() {
         )}
 
         {/* ============================================================ */}
-        {/* TAB 4: PROFILE & ORDER HISTORY                               */}
+        {/* TAB 4: PROFILE & ORDER HISTORY (RED THEME)                   */}
         {/* ============================================================ */}
         {activeTab === "profile" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-stone-200 rounded-3xl p-6 shadow-sm">
+            <div className="bg-white border border-red-200/70 rounded-3xl p-6 shadow-sm">
               <h3 className="text-sm font-black uppercase tracking-wider mb-5 flex items-center gap-2 pb-3 border-b border-stone-100">
-                <FileText size={16} className={theme.text} /> Order History
+                <FileText size={16} className="text-red-700" /> Order History
               </h3>
               <div className="space-y-4">
                 {ordersHistory.length === 0 ? (
@@ -1643,9 +1694,10 @@ function DashboardContent() {
               </div>
             </div>
 
-            <div className="bg-stone-950 text-white rounded-3xl p-7 flex flex-col justify-between shadow-xl">
-              <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${theme.textLight} mb-2`}>
+            <div className="bg-stone-950 text-white rounded-3xl p-7 flex flex-col justify-between shadow-xl border border-red-900/40 relative overflow-hidden">
+              <div className="absolute -right-20 -bottom-20 w-56 h-56 bg-red-800/25 blur-[100px] rounded-full pointer-events-none" />
+              <div className="relative z-10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-500 mb-2">
                   Need Assistance?
                 </p>
                 <h3 className="text-2xl font-black uppercase mb-2">Evolution Body Support</h3>
@@ -1655,7 +1707,7 @@ function DashboardContent() {
               </div>
               <Link
                 href="/contact"
-                className={`w-full text-center ${theme.primaryBg} ${theme.primaryHover} text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all`}
+                className="relative z-10 w-full text-center bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs py-4 rounded-xl transition-all shadow-lg shadow-red-900/25"
               >
                 Contact Support
               </Link>

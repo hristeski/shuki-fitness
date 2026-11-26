@@ -249,12 +249,12 @@ export const WEEKLY_SCHEDULES: Record<WeeklyFreq, Record<number, WorkoutSession 
     5: null,                       // Saturday (Rest)
     6: null,                       // Sunday (Rest)
   },
-  // 2x (ако нема време): Вторник (1) и Среда (2)
+  // 2x: Понеделник (0) и Четврток (3)
   "2x": {
-    0: null,                       // Monday (Rest)
-    1: WORKOUT_LIBRARY.upperPush,  // Tuesday
-    2: WORKOUT_LIBRARY.lowerPower, // Wednesday
-    3: null,                       // Thursday (Rest)
+    0: WORKOUT_LIBRARY.upperPush,  // Monday
+    1: null,                       // Tuesday (Rest)
+    2: null,                       // Wednesday (Rest)
+    3: WORKOUT_LIBRARY.lowerPower, // Thursday
     4: null,                       // Friday (Rest)
     5: null,                       // Saturday (Rest)
     6: null,                       // Sunday (Rest)
