@@ -1632,7 +1632,7 @@ function DashboardContent() {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-black uppercase tracking-wider text-xs py-4 px-6 rounded-2xl text-center transition-all shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2"
               >
                 Message on WhatsApp <ExternalLink size={15} />
               </a>
