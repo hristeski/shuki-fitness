@@ -4,17 +4,324 @@ export type ExerciseItem = {
   sets: string;
   reps: string;
   rest: string;
-  videoUrl: string; // Линк до видео (или /videos/bench.mp4 за директен download)
+  restSeconds: number;
+  videoUrl: string;
   muscleGroup: string;
 };
 
-export type WorkoutDay = {
-  day: string;
+export type WorkoutSession = {
+  id: string;
   title: string;
   focus: string;
   duration: string;
   exercises: ExerciseItem[];
 };
+
+export type WeeklyFreq = "2x" | "3x" | "4x" | "5x";
+
+export const WEEK_DAYS = [
+  { index: 0, short: "Mon", full: "Monday" },
+  { index: 1, short: "Tue", full: "Tuesday" },
+  { index: 2, short: "Wed", full: "Wednesday" },
+  { index: 3, short: "Thu", full: "Thursday" },
+  { index: 4, short: "Fri", full: "Friday" },
+  { index: 5, short: "Sat", full: "Saturday" },
+  { index: 6, short: "Sun", full: "Sunday" },
+] as const;
+
+export const WORKOUT_LIBRARY: Record<string, WorkoutSession> = {
+  upperPush: {
+    id: "upper-push",
+    title: "Upper Body Push",
+    focus: "Chest • Shoulders • Triceps",
+    duration: "55 min",
+    exercises: [
+      {
+        id: "push-1",
+        name: "Incline Dumbbell Press",
+        sets: "4",
+        reps: "8–10",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Chest",
+        videoUrl: "https://www.muscleandstrength.com/exercises/incline-dumbbell-bench-press.html",
+      },
+      {
+        id: "push-2",
+        name: "Flat Barbell Bench Press",
+        sets: "3",
+        reps: "8–12",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Chest",
+        videoUrl: "https://www.muscleandstrength.com/exercises/barbell-bench-press.html",
+      },
+      {
+        id: "push-3",
+        name: "Dumbbell Lateral Raises",
+        sets: "4",
+        reps: "12–15",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Shoulders",
+        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-lateral-raise.html",
+      },
+      {
+        id: "push-4",
+        name: "Cable Tricep Pushdowns",
+        sets: "3",
+        reps: "12–15",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Triceps",
+        videoUrl: "https://www.muscleandstrength.com/exercises/tricep-rope-pushdown.html",
+      },
+    ],
+  },
+
+  lowerPower: {
+    id: "lower-power",
+    title: "Lower Body Power",
+    focus: "Quads • Glutes • Hamstrings",
+    duration: "60 min",
+    exercises: [
+      {
+        id: "lower-1",
+        name: "Barbell Back Squat",
+        sets: "4",
+        reps: "6–8",
+        rest: "120s",
+        restSeconds: 120,
+        muscleGroup: "Quads",
+        videoUrl: "https://www.muscleandstrength.com/exercises/squat.html",
+      },
+      {
+        id: "lower-2",
+        name: "Romanian Deadlift (RDL)",
+        sets: "4",
+        reps: "10–12",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Hamstrings",
+        videoUrl: "https://www.muscleandstrength.com/exercises/romanian-deadlift.html",
+      },
+      {
+        id: "lower-3",
+        name: "Bulgarian Split Squats",
+        sets: "3",
+        reps: "10 / leg",
+        rest: "75s",
+        restSeconds: 75,
+        muscleGroup: "Glutes",
+        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-split-squat.html",
+      },
+      {
+        id: "lower-4",
+        name: "Standing Calf Raises",
+        sets: "4",
+        reps: "15–20",
+        rest: "45s",
+        restSeconds: 45,
+        muscleGroup: "Calves",
+        videoUrl: "https://www.muscleandstrength.com/exercises/standing-calf-raise.html",
+      },
+    ],
+  },
+
+  upperPull: {
+    id: "upper-pull",
+    title: "Upper Body Pull",
+    focus: "Back • Rear Delts • Biceps",
+    duration: "55 min",
+    exercises: [
+      {
+        id: "pull-1",
+        name: "Lat Pulldown (Wide Grip)",
+        sets: "4",
+        reps: "10–12",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Back",
+        videoUrl: "https://www.muscleandstrength.com/exercises/lat-pull-down.html",
+      },
+      {
+        id: "pull-2",
+        name: "Seated Cable Row",
+        sets: "4",
+        reps: "10–12",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Back",
+        videoUrl: "https://www.muscleandstrength.com/exercises/seated-row.html",
+      },
+      {
+        id: "pull-3",
+        name: "Face Pulls",
+        sets: "3",
+        reps: "15",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Rear Delts",
+        videoUrl: "https://www.muscleandstrength.com/exercises/face-pull.html",
+      },
+      {
+        id: "pull-4",
+        name: "EZ-Bar Bicep Curls",
+        sets: "3",
+        reps: "10–12",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Biceps",
+        videoUrl: "https://www.muscleandstrength.com/exercises/ez-bar-curl.html",
+      },
+    ],
+  },
+
+  fullBody: {
+    id: "full-body",
+    title: "Full Body & Core",
+    focus: "Conditioning • Abs • Weak Points",
+    duration: "50 min",
+    exercises: [
+      {
+        id: "full-1",
+        name: "Dumbbell Shoulder Press",
+        sets: "3",
+        reps: "10–12",
+        rest: "75s",
+        restSeconds: 75,
+        muscleGroup: "Shoulders",
+        videoUrl: "https://www.muscleandstrength.com/exercises/seated-dumbbell-press.html",
+      },
+      {
+        id: "full-2",
+        name: "Walking Dumbbell Lunges",
+        sets: "3",
+        reps: "12 / leg",
+        rest: "75s",
+        restSeconds: 75,
+        muscleGroup: "Legs",
+        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-lunge.html",
+      },
+      {
+        id: "full-3",
+        name: "Dumbbell Row (Single Arm)",
+        sets: "3",
+        reps: "10 / side",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Back",
+        videoUrl: "https://www.muscleandstrength.com/exercises/one-arm-dumbbell-row.html",
+      },
+      {
+        id: "full-4",
+        name: "Hanging Leg Raises",
+        sets: "4",
+        reps: "12–15",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Core",
+        videoUrl: "https://www.muscleandstrength.com/exercises/hanging-leg-raise.html",
+      },
+    ],
+  },
+
+  shouldersArms: {
+    id: "shoulders-arms",
+    title: "Shoulders, Arms & Core",
+    focus: "Delts • Biceps • Triceps • Abs",
+    duration: "50 min",
+    exercises: [
+      {
+        id: "arms-1",
+        name: "Seated Dumbbell Shoulder Press",
+        sets: "4",
+        reps: "8–10",
+        rest: "90s",
+        restSeconds: 90,
+        muscleGroup: "Shoulders",
+        videoUrl: "https://www.muscleandstrength.com/exercises/seated-dumbbell-press.html",
+      },
+      {
+        id: "arms-2",
+        name: "Hammer Curls",
+        sets: "3",
+        reps: "12",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Biceps",
+        videoUrl: "https://www.muscleandstrength.com/exercises/hammer-curl.html",
+      },
+      {
+        id: "arms-3",
+        name: "Overhead Cable Tricep Extension",
+        sets: "3",
+        reps: "12–15",
+        rest: "60s",
+        restSeconds: 60,
+        muscleGroup: "Triceps",
+        videoUrl: "https://www.muscleandstrength.com/exercises/overhead-rope-tricep-extension.html",
+      },
+      {
+        id: "arms-4",
+        name: "Plank Hold",
+        sets: "3",
+        reps: "60 sec",
+        rest: "45s",
+        restSeconds: 45,
+        muscleGroup: "Core",
+        videoUrl: "https://www.muscleandstrength.com/exercises/hover.html",
+      },
+    ],
+  },
+};
+
+// Мапирање од Monday (0) до Sunday (6) според тоа колку пати неделно сака да вежба
+export const WEEKLY_SCHEDULES: Record<WeeklyFreq, Record<number, WorkoutSession | null>> = {
+  "2x": {
+    0: WORKOUT_LIBRARY.upperPush, // Monday
+    1: null,                      // Tuesday (Rest)
+    2: null,                      // Wednesday (Rest)
+    3: WORKOUT_LIBRARY.lowerPower,// Thursday
+    4: null,                      // Friday (Rest)
+    5: null,                      // Saturday (Rest)
+    6: null,                      // Sunday (Rest)
+  },
+  "3x": {
+    0: WORKOUT_LIBRARY.upperPush, // Monday
+    1: null,                      // Tuesday
+    2: WORKOUT_LIBRARY.lowerPower,// Wednesday
+    3: null,                      // Thursday
+    4: WORKOUT_LIBRARY.upperPull, // Friday
+    5: null,                      // Saturday
+    6: null,                      // Sunday
+  },
+  "4x": {
+    0: WORKOUT_LIBRARY.upperPush, // Monday
+    1: WORKOUT_LIBRARY.lowerPower,// Tuesday
+    2: null,                      // Wednesday
+    3: WORKOUT_LIBRARY.upperPull, // Thursday
+    4: WORKOUT_LIBRARY.fullBody,  // Friday
+    5: null,                      // Saturday
+    6: null,                      // Sunday
+  },
+  "5x": {
+    0: WORKOUT_LIBRARY.upperPush,     // Monday
+    1: WORKOUT_LIBRARY.lowerPower,    // Tuesday
+    2: WORKOUT_LIBRARY.upperPull,     // Wednesday
+    3: null,                          // Thursday
+    4: WORKOUT_LIBRARY.shouldersArms, // Friday
+    5: WORKOUT_LIBRARY.fullBody,      // Saturday
+    6: null,                          // Sunday
+  },
+};
+
+export const REST_DAY_HABITS = [
+  { id: "rest-steps", label: "8,000 – 10,000 Daily Steps (Light Walk)" },
+  { id: "rest-water", label: "Drink 3L+ Water & Electrolytes" },
+  { id: "rest-stretch", label: "10 min Mobility & Stretching" },
+  { id: "rest-sleep", label: "7–8 Hours Quality Sleep for Muscle Growth" },
+];
 
 export type MealOption = {
   name: string;
@@ -27,180 +334,10 @@ export type MealOption = {
 
 export type MealSlot = {
   id: string;
-  slotName: string; // Breakfast, Lunch, Dinner, Snack
+  slotName: string;
   time: string;
-  options: MealOption[]; // Кога корисникот клика SWAP, врти низ овие опции
+  options: MealOption[];
 };
-
-export const WORKOUT_DAYS: WorkoutDay[] = [
-  {
-    day: "Day 1",
-    title: "Upper Body Push",
-    focus: "Chest • Shoulders • Triceps",
-    duration: "55 min",
-    exercises: [
-      {
-        id: "d1-e1",
-        name: "Incline Dumbbell Press",
-        sets: "4",
-        reps: "8–10",
-        rest: "90s",
-        muscleGroup: "Chest",
-        videoUrl: "https://www.muscleandstrength.com/exercises/incline-dumbbell-bench-press.html",
-      },
-      {
-        id: "d1-e2",
-        name: "Flat Barbell Bench Press",
-        sets: "3",
-        reps: "8–12",
-        rest: "90s",
-        muscleGroup: "Chest",
-        videoUrl: "https://www.muscleandstrength.com/exercises/barbell-bench-press.html",
-      },
-      {
-        id: "d1-e3",
-        name: "Dumbbell Lateral Raises",
-        sets: "4",
-        reps: "12–15",
-        rest: "60s",
-        muscleGroup: "Shoulders",
-        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-lateral-raise.html",
-      },
-      {
-        id: "d1-e4",
-        name: "Cable Tricep Pushdowns",
-        sets: "3",
-        reps: "12–15",
-        rest: "60s",
-        muscleGroup: "Triceps",
-        videoUrl: "https://www.muscleandstrength.com/exercises/tricep-rope-pushdown.html",
-      },
-    ],
-  },
-  {
-    day: "Day 2",
-    title: "Lower Body Power",
-    focus: "Quads • Glutes • Hamstrings",
-    duration: "60 min",
-    exercises: [
-      {
-        id: "d2-e1",
-        name: "Barbell Back Squat",
-        sets: "4",
-        reps: "6–8",
-        rest: "120s",
-        muscleGroup: "Quads",
-        videoUrl: "https://www.muscleandstrength.com/exercises/squat.html",
-      },
-      {
-        id: "d2-e2",
-        name: "Romanian Deadlift (RDL)",
-        sets: "4",
-        reps: "10–12",
-        rest: "90s",
-        muscleGroup: "Hamstrings",
-        videoUrl: "https://www.muscleandstrength.com/exercises/romanian-deadlift.html",
-      },
-      {
-        id: "d2-e3",
-        name: "Bulgarian Split Squats",
-        sets: "3",
-        reps: "10 / leg",
-        rest: "75s",
-        muscleGroup: "Glutes",
-        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-split-squat.html",
-      },
-      {
-        id: "d2-e4",
-        name: "Standing Calf Raises",
-        sets: "4",
-        reps: "15–20",
-        rest: "45s",
-        muscleGroup: "Calves",
-        videoUrl: "https://www.muscleandstrength.com/exercises/standing-calf-raise.html",
-      },
-    ],
-  },
-  {
-    day: "Day 3",
-    title: "Upper Body Pull",
-    focus: "Back • Rear Delts • Biceps",
-    duration: "55 min",
-    exercises: [
-      {
-        id: "d3-e1",
-        name: "Lat Pulldown (Wide Grip)",
-        sets: "4",
-        reps: "10–12",
-        rest: "90s",
-        muscleGroup: "Back",
-        videoUrl: "https://www.muscleandstrength.com/exercises/lat-pull-down.html",
-      },
-      {
-        id: "d3-e2",
-        name: "Seated Cable Row",
-        sets: "4",
-        reps: "10–12",
-        rest: "90s",
-        muscleGroup: "Back",
-        videoUrl: "https://www.muscleandstrength.com/exercises/seated-row.html",
-      },
-      {
-        id: "d3-e3",
-        name: "Face Pulls",
-        sets: "3",
-        reps: "15",
-        rest: "60s",
-        muscleGroup: "Rear Delts",
-        videoUrl: "https://www.muscleandstrength.com/exercises/face-pull.html",
-      },
-      {
-        id: "d3-e4",
-        name: "EZ-Bar Bicep Curls",
-        sets: "3",
-        reps: "10–12",
-        rest: "60s",
-        muscleGroup: "Biceps",
-        videoUrl: "https://www.muscleandstrength.com/exercises/ez-bar-curl.html",
-      },
-    ],
-  },
-  {
-    day: "Day 4",
-    title: "Full Body & Core",
-    focus: "Conditioning • Abs • Weak Points",
-    duration: "50 min",
-    exercises: [
-      {
-        id: "d4-e1",
-        name: "Dumbbell Shoulder Press",
-        sets: "3",
-        reps: "10–12",
-        rest: "75s",
-        muscleGroup: "Shoulders",
-        videoUrl: "https://www.muscleandstrength.com/exercises/seated-dumbbell-press.html",
-      },
-      {
-        id: "d4-e2",
-        name: "Walking Dumbbell Lunges",
-        sets: "3",
-        reps: "12 / leg",
-        rest: "75s",
-        muscleGroup: "Legs",
-        videoUrl: "https://www.muscleandstrength.com/exercises/dumbbell-lunge.html",
-      },
-      {
-        id: "d4-e3",
-        name: "Hanging Leg Raises",
-        sets: "4",
-        reps: "12–15",
-        rest: "60s",
-        muscleGroup: "Core",
-        videoUrl: "https://www.muscleandstrength.com/exercises/hanging-leg-raise.html",
-      },
-    ],
-  },
-];
 
 export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealSlot[]> = {
   cutting: [

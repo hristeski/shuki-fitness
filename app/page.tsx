@@ -963,116 +963,38 @@ export default function Home() {
         </section>
       </ScrollReveal>
 
-      {/* MODAL 1: PROGRAM DETAILS PREVIEW */}
-      {selectedProgram && (
-        <div
-          className="fixed inset-0 z-50 bg-stone-950/75 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setSelectedProgram(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-stone-200 max-h-[90vh] flex flex-col"
-          >
-            <button
-              onClick={() => setSelectedProgram(null)}
-              aria-label="Close details"
-              className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white/95 hover:bg-red-800 text-stone-800 hover:text-white flex items-center justify-center shadow-md transition-colors cursor-pointer"
+     {/* 6. DIRECT CONTACT CTA */}
+      <ScrollReveal className="pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-10 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <span className="inline-block px-3 py-1 rounded-md bg-red-50 text-red-800 text-[10px] font-black uppercase tracking-widest">
+              Need Help Choosing?
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter leading-tight">
+              Have a Question? <span className="text-red-800">Contact Us Directly.</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 font-medium">
+              Reach Coach Andrej on WhatsApp, Viber, Instagram, or Email for fast guidance on programs or 1-on-1 coaching.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-2 bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-2xl transition-all shadow-lg shadow-red-900/20 active:scale-95"
             >
-              <X size={18} />
-            </button>
-
-            <div className="relative h-56 sm:h-64 w-full bg-stone-950 flex-shrink-0 overflow-hidden">
-              <Image
-                src={selectedProgram.image}
-                alt=""
-                fill
-                aria-hidden
-                className="object-cover blur-xl opacity-35 scale-110 pointer-events-none"
-              />
-              <Image
-                src={selectedProgram.image}
-                alt={selectedProgram.title}
-                fill
-                className="object-contain p-2"
-              />
-              <span
-                className={`absolute bottom-3 left-4 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg z-10 ${activeTheme.badge}`}
-              >
-                {selectedProgram.badge}
-              </span>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-4">
-              <div>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${activeTheme.sub}`}>
-                  {selectedProgram.sub}
-                </p>
-                <h3 className="text-2xl font-black uppercase tracking-tight mt-0.5">
-                  {selectedProgram.title}
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 bg-stone-50 border border-stone-200/80 rounded-2xl p-3.5">
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-stone-400">Goal</p>
-                  <p className="text-xs font-black text-stone-900 mt-0.5">
-                    {selectedProgram.goal}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-stone-400">Duration</p>
-                  <p className="text-xs font-black text-stone-900 mt-0.5">
-                    {selectedProgram.duration}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-                {selectedProgram.desc}
-              </p>
-
-              <ul className="space-y-2 pt-1">
-                {selectedProgram.highlights.map((h) => (
-                  <li key={h} className="flex items-start gap-2 text-xs font-bold text-stone-800">
-                    <span
-                      className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${activeTheme.modalCheck}`}
-                    >
-                      <Check size={11} strokeWidth={3} />
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-4 border-t border-stone-200 flex items-center justify-between gap-4">
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-xs text-stone-400 line-through font-bold">
-                    {convert(selectedProgram.oldPrice)}
-                  </span>
-                  <span className="text-2xl font-black text-stone-950">
-                    {convert(selectedProgram.price)}
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    addToCart({
-                      id: selectedProgram.id,
-                      name: selectedProgram.cartName,
-                      price: selectedProgram.price,
-                      quantity: 1,
-                      image: selectedProgram.image,
-                    });
-                    setSelectedProgram(null);
-                  }}
-                  className={`bg-stone-950 ${activeTheme.buyHover} text-white font-black uppercase tracking-wider text-xs px-7 py-3.5 rounded-xl transition-all active:scale-95 cursor-pointer`}
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
+              Contact Us
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/coaching"
+              className="inline-flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-950 text-stone-900 hover:text-white font-black uppercase tracking-wider text-xs px-6 py-4 rounded-2xl transition-all active:scale-95"
+            >
+              1-on-1 Coaching
+            </Link>
           </div>
         </div>
-      )}
+      </ScrollReveal>
 
       {/* MODAL 2: TRANSFORMATION FULLSCREEN LIGHTBOX */}
       {lightboxImage && (
