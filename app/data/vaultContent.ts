@@ -17,7 +17,7 @@ export type WorkoutSession = {
   exercises: ExerciseItem[];
 };
 
-export type WeeklyFreq = "2x" | "3x" | "4x" | "5x";
+export type WeeklyFreq = "4x" | "3x" | "2x";
 
 export const WEEK_DAYS = [
   { index: 0, short: "Mon", full: "Monday" },
@@ -225,101 +225,45 @@ export const WORKOUT_LIBRARY: Record<string, WorkoutSession> = {
       },
     ],
   },
-
-  shouldersArms: {
-    id: "shoulders-arms",
-    title: "Shoulders, Arms & Core",
-    focus: "Delts • Biceps • Triceps • Abs",
-    duration: "50 min",
-    exercises: [
-      {
-        id: "arms-1",
-        name: "Seated Dumbbell Shoulder Press",
-        sets: "4",
-        reps: "8–10",
-        rest: "90s",
-        restSeconds: 90,
-        muscleGroup: "Shoulders",
-        videoUrl: "https://www.muscleandstrength.com/exercises/seated-dumbbell-press.html",
-      },
-      {
-        id: "arms-2",
-        name: "Hammer Curls",
-        sets: "3",
-        reps: "12",
-        rest: "60s",
-        restSeconds: 60,
-        muscleGroup: "Biceps",
-        videoUrl: "https://www.muscleandstrength.com/exercises/hammer-curl.html",
-      },
-      {
-        id: "arms-3",
-        name: "Overhead Cable Tricep Extension",
-        sets: "3",
-        reps: "12–15",
-        rest: "60s",
-        restSeconds: 60,
-        muscleGroup: "Triceps",
-        videoUrl: "https://www.muscleandstrength.com/exercises/overhead-rope-tricep-extension.html",
-      },
-      {
-        id: "arms-4",
-        name: "Plank Hold",
-        sets: "3",
-        reps: "60 sec",
-        rest: "45s",
-        restSeconds: 45,
-        muscleGroup: "Core",
-        videoUrl: "https://www.muscleandstrength.com/exercises/hover.html",
-      },
-    ],
-  },
 };
 
-// Мапирање од Monday (0) до Sunday (6) според тоа колку пати неделно сака да вежба
+// 0 = Monday, 1 = Tuesday, 2 = Wednesday, 3 = Thursday, 4 = Friday, 5 = Saturday, 6 = Sunday
 export const WEEKLY_SCHEDULES: Record<WeeklyFreq, Record<number, WorkoutSession | null>> = {
-  "2x": {
-    0: WORKOUT_LIBRARY.upperPush, // Monday
-    1: null,                      // Tuesday (Rest)
-    2: null,                      // Wednesday (Rest)
-    3: WORKOUT_LIBRARY.lowerPower,// Thursday
-    4: null,                      // Friday (Rest)
-    5: null,                      // Saturday (Rest)
-    6: null,                      // Sunday (Rest)
-  },
-  "3x": {
-    0: WORKOUT_LIBRARY.upperPush, // Monday
-    1: null,                      // Tuesday
-    2: WORKOUT_LIBRARY.lowerPower,// Wednesday
-    3: null,                      // Thursday
-    4: WORKOUT_LIBRARY.upperPull, // Friday
-    5: null,                      // Saturday
-    6: null,                      // Sunday
-  },
+  // 4x (Default): Одмор во Среда (2), Петок (4) и Недела (6)
   "4x": {
-    0: WORKOUT_LIBRARY.upperPush, // Monday
-    1: WORKOUT_LIBRARY.lowerPower,// Tuesday
-    2: null,                      // Wednesday
-    3: WORKOUT_LIBRARY.upperPull, // Thursday
-    4: WORKOUT_LIBRARY.fullBody,  // Friday
-    5: null,                      // Saturday
-    6: null,                      // Sunday
+    0: WORKOUT_LIBRARY.upperPush,  // Monday
+    1: WORKOUT_LIBRARY.lowerPower, // Tuesday
+    2: null,                       // Wednesday (Rest)
+    3: WORKOUT_LIBRARY.upperPull,  // Thursday
+    4: null,                       // Friday (Rest)
+    5: WORKOUT_LIBRARY.fullBody,   // Saturday
+    6: null,                       // Sunday (Rest)
   },
-  "5x": {
-    0: WORKOUT_LIBRARY.upperPush,     // Monday
-    1: WORKOUT_LIBRARY.lowerPower,    // Tuesday
-    2: WORKOUT_LIBRARY.upperPull,     // Wednesday
-    3: null,                          // Thursday
-    4: WORKOUT_LIBRARY.shouldersArms, // Friday
-    5: WORKOUT_LIBRARY.fullBody,      // Saturday
-    6: null,                          // Sunday
+  // 3x (ако нема време): Понеделник (0), Среда (2) и Петок (4)
+  "3x": {
+    0: WORKOUT_LIBRARY.upperPush,  // Monday
+    1: null,                       // Tuesday (Rest)
+    2: WORKOUT_LIBRARY.lowerPower, // Wednesday
+    3: null,                       // Thursday (Rest)
+    4: WORKOUT_LIBRARY.upperPull,  // Friday
+    5: null,                       // Saturday (Rest)
+    6: null,                       // Sunday (Rest)
+  },
+  // 2x (ако нема време): Вторник (1) и Среда (2)
+  "2x": {
+    0: null,                       // Monday (Rest)
+    1: WORKOUT_LIBRARY.upperPush,  // Tuesday
+    2: WORKOUT_LIBRARY.lowerPower, // Wednesday
+    3: null,                       // Thursday (Rest)
+    4: null,                       // Friday (Rest)
+    5: null,                       // Saturday (Rest)
+    6: null,                       // Sunday (Rest)
   },
 };
 
 export const REST_DAY_HABITS = [
   { id: "rest-steps", label: "8,000 – 10,000 Daily Steps (Light Walk)" },
   { id: "rest-water", label: "Drink 3L+ Water & Electrolytes" },
-  { id: "rest-stretch", label: "10 min Mobility & Stretching" },
   { id: "rest-sleep", label: "7–8 Hours Quality Sleep for Muscle Growth" },
 ];
 
@@ -334,6 +278,7 @@ export type MealOption = {
 
 export type MealSlot = {
   id: string;
+  mealNumber: string;
   slotName: string;
   time: string;
   options: MealOption[];
@@ -343,7 +288,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
   cutting: [
     {
       id: "c-m1",
-      slotName: "Meal 1 • Breakfast",
+      mealNumber: "Meal 1",
+      slotName: "Breakfast",
       time: "08:30",
       options: [
         {
@@ -374,7 +320,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "c-m2",
-      slotName: "Meal 2 • Lunch",
+      mealNumber: "Meal 2",
+      slotName: "Lunch",
       time: "13:30",
       options: [
         {
@@ -405,8 +352,33 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "c-m3",
-      slotName: "Meal 3 • Dinner",
-      time: "19:00",
+      mealNumber: "Meal 3",
+      slotName: "Post-Workout Snack",
+      time: "16:30",
+      options: [
+        {
+          name: "Whey Shake & Green Apple",
+          ingredients: "1 scoop whey isolate + water + 1 medium green apple",
+          kcal: 215,
+          protein: 27,
+          carbs: 24,
+          fats: 1,
+        },
+        {
+          name: "Skyr Yogurt & Rice Cakes",
+          ingredients: "170g plain Skyr, 2 plain rice cakes, pinch of stevia",
+          kcal: 220,
+          protein: 22,
+          carbs: 28,
+          fats: 2,
+        },
+      ],
+    },
+    {
+      id: "c-m4",
+      mealNumber: "Meal 4",
+      slotName: "Dinner",
+      time: "19:30",
       options: [
         {
           name: "Baked White Fish & Asparagus",
@@ -434,35 +406,13 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
         },
       ],
     },
-    {
-      id: "c-m4",
-      slotName: "Meal 4 • Post-Workout / Snack",
-      time: "16:30",
-      options: [
-        {
-          name: "Whey Shake & Green Apple",
-          ingredients: "1 scoop whey isolate + water + 1 medium green apple",
-          kcal: 215,
-          protein: 27,
-          carbs: 24,
-          fats: 1,
-        },
-        {
-          name: "Skyr Yogurt & Rice Cakes",
-          ingredients: "170g plain Skyr, 2 plain rice cakes, pinch of stevia",
-          kcal: 220,
-          protein: 22,
-          carbs: 28,
-          fats: 2,
-        },
-      ],
-    },
   ],
 
   bulking: [
     {
       id: "b-m1",
-      slotName: "Meal 1 • Breakfast",
+      mealNumber: "Meal 1",
+      slotName: "Breakfast",
       time: "08:30",
       options: [
         {
@@ -485,7 +435,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "b-m2",
-      slotName: "Meal 2 • Lunch",
+      mealNumber: "Meal 2",
+      slotName: "Lunch",
       time: "13:30",
       options: [
         {
@@ -508,30 +459,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "b-m3",
-      slotName: "Meal 3 • Dinner",
-      time: "19:30",
-      options: [
-        {
-          name: "Grilled Salmon & Sweet Potato Mash",
-          ingredients: "200g Atlantic salmon, 280g sweet potato, green beans, butter",
-          kcal: 720,
-          protein: 46,
-          carbs: 64,
-          fats: 28,
-        },
-        {
-          name: "Chicken Thighs & Potato Wedges",
-          ingredients: "220g skinless chicken thighs, 300g baked potatoes, Greek salad",
-          kcal: 730,
-          protein: 50,
-          carbs: 72,
-          fats: 24,
-        },
-      ],
-    },
-    {
-      id: "b-m4",
-      slotName: "Meal 4 • Mass Shake / Snack",
+      mealNumber: "Meal 3",
+      slotName: "Mass Shake / Snack",
       time: "16:30",
       options: [
         {
@@ -552,12 +481,37 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
         },
       ],
     },
+    {
+      id: "b-m4",
+      mealNumber: "Meal 4",
+      slotName: "Dinner",
+      time: "19:30",
+      options: [
+        {
+          name: "Grilled Salmon & Sweet Potato Mash",
+          ingredients: "200g Atlantic salmon, 280g sweet potato, green beans, butter",
+          kcal: 720,
+          protein: 46,
+          carbs: 64,
+          fats: 28,
+        },
+        {
+          name: "Chicken Thighs & Potato Wedges",
+          ingredients: "220g skinless chicken thighs, 300g baked potatoes, Greek salad",
+          kcal: 730,
+          protein: 50,
+          carbs: 72,
+          fats: 24,
+        },
+      ],
+    },
   ],
 
   vegan: [
     {
       id: "v-m1",
-      slotName: "Meal 1 • Breakfast",
+      mealNumber: "Meal 1",
+      slotName: "Breakfast",
       time: "08:30",
       options: [
         {
@@ -580,7 +534,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "v-m2",
-      slotName: "Meal 2 • Lunch",
+      mealNumber: "Meal 2",
+      slotName: "Lunch",
       time: "13:30",
       options: [
         {
@@ -603,7 +558,8 @@ export const NUTRITION_PLANS_DATA: Record<"cutting" | "bulking" | "vegan", MealS
     },
     {
       id: "v-m3",
-      slotName: "Meal 3 • Dinner",
+      mealNumber: "Meal 3",
+      slotName: "Dinner",
       time: "19:00",
       options: [
         {

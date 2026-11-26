@@ -276,7 +276,7 @@ export default function Navbar() {
             >
               <span className="flex items-center gap-2.5">
                 <User size={16} />
-                My Profile &amp; Vault
+                My Profile &amp; Programs
               </span>
               <ArrowUpRight size={16} />
             </Link>
