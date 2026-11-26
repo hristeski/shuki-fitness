@@ -283,63 +283,47 @@ export default function Home() {
               Cutting, and Vegan nutrition. No guesswork — just real discipline.
             </p>
 
-            {/* MOBILE REDESIGNED HERO BUTTONS — SLIM, NARROW & REVERSED */}
-            <div className="flex lg:hidden flex-col gap-2.5 max-w-[260px] sm:max-w-[290px] mx-auto pt-1">
+        
+{/* UNIFIED HERO BUTTONS (MOBILE & DESKTOP) */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-[300px] sm:max-w-xl mx-auto lg:mx-0 pt-2">
               <Link
                 href="/coaching"
-                className="group flex items-center justify-between gap-2.5 bg-white text-stone-950 p-1.5 pr-2 rounded-full shadow-lg shadow-black/35 active:scale-[0.97] transition-all"
+                className="group flex-1 flex items-center justify-between gap-3 bg-white hover:bg-stone-100 text-stone-950 p-2 pr-2.5 rounded-full shadow-lg shadow-black/35 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <Sparkles size={14} />
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm shadow-orange-500/30">
+                    <Sparkles size={16} />
                   </span>
-                  <span className="font-black uppercase tracking-wider text-[11px] text-left">
+                  <span className="font-black uppercase tracking-wider text-xs whitespace-nowrap">
                     Online Coaching
                   </span>
                 </div>
 
-                <span className="w-7 h-7 rounded-full bg-stone-100 text-stone-900 flex items-center justify-center flex-shrink-0 group-active:translate-x-0.5 group-active:-translate-y-0.5 transition-transform">
-                  <ArrowUpRight size={14} strokeWidth={2.5} />
+                <span className="w-8 h-8 rounded-full bg-stone-100 group-hover:bg-stone-200 text-stone-900 flex items-center justify-center flex-shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                  <ArrowUpRight size={15} strokeWidth={2.5} />
                 </span>
               </Link>
 
               <a
                 href="#programs"
-                className="group flex items-center justify-between gap-2.5 bg-gradient-to-r from-red-700 via-red-800 to-red-900 border border-red-500/40 text-white p-1.5 pr-2 rounded-full shadow-lg shadow-red-950/60 active:scale-[0.97] transition-all"
+                className="group flex-1 flex items-center justify-between gap-3 bg-gradient-to-r from-red-700 via-red-800 to-red-900 hover:from-red-600 hover:to-red-800 border border-red-500/40 text-white p-2 pr-2.5 rounded-full shadow-lg shadow-red-950/60 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-8 h-8 rounded-full bg-white/15 border border-white/15 flex items-center justify-center flex-shrink-0">
-                    <Dumbbell size={14} className="text-white" />
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-full bg-white/15 border border-white/15 flex items-center justify-center flex-shrink-0">
+                    <Dumbbell size={16} className="text-white" />
                   </span>
-                  <span className="font-black uppercase tracking-wider text-[11px] text-left">
+                  <span className="font-black uppercase tracking-wider text-xs whitespace-nowrap">
                     Choose a Program
                   </span>
                 </div>
 
-                <span className="w-7 h-7 rounded-full bg-white text-red-800 flex items-center justify-center flex-shrink-0 shadow-sm group-active:translate-x-0.5 transition-transform">
-                  <ArrowRight size={14} strokeWidth={2.5} />
+                <span className="w-8 h-8 rounded-full bg-white text-red-800 flex items-center justify-center flex-shrink-0 shadow-sm group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight size={15} strokeWidth={2.5} />
                 </span>
               </a>
             </div>
-
-            {/* DESKTOP HERO BUTTONS (UNCHANGED) */}
-            <div className="hidden lg:flex flex-row gap-3 max-w-md pt-1">
-              <a
-                href="#programs"
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-2xl transition-all shadow-lg shadow-red-900/40 active:scale-95"
-              >
-                Choose a Program
-                <ArrowRight size={16} />
-              </a>
-              <Link
-                href="/coaching"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white hover:text-stone-950 border border-white/15 text-white font-black uppercase tracking-wider text-xs px-6 py-4 rounded-2xl transition-all active:scale-95"
-              >
-                <Sparkles size={15} />
-                Online Coaching
-              </Link>
-            </div>
           </div>
+
           {/* DESKTOP PORTRAIT */}
           <div className="hidden lg:block lg:col-span-5 relative">
             <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-stone-800 shadow-2xl group">
