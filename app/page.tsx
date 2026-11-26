@@ -283,32 +283,47 @@ export default function Home() {
               Cutting, and Vegan nutrition. No guesswork — just real discipline.
             </p>
 
-            {/* GLOWING PROMO TICKET CARD */}
-            <div className="animate-ticket-glow max-w-md mx-auto lg:mx-0 bg-stone-900/95 border border-red-700/60 rounded-2xl p-4 flex items-center justify-between text-left relative overflow-hidden">
-              <div className="pr-4 border-r border-dashed border-stone-700">
-                <p className="text-2xl sm:text-3xl font-black text-red-500 leading-none">
-                  30% OFF
-                </p>
-                <p className="text-[9px] font-black uppercase tracking-widest text-stone-400 mt-1">
-                  Launch Offer
-                </p>
-              </div>
-              <div className="pl-4 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-red-400">
-                  Training &amp; Nutrition Plans
-                </p>
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-0.5">
-                  <span className="text-xs text-stone-500 line-through font-bold">
-                    {convert(22)}
+            {/* MOBILE REDESIGNED HERO BUTTONS — SLIM, NARROW & REVERSED */}
+            <div className="flex lg:hidden flex-col gap-2.5 max-w-[260px] sm:max-w-[290px] mx-auto pt-1">
+              <Link
+                href="/coaching"
+                className="group flex items-center justify-between gap-2.5 bg-white text-stone-950 p-1.5 pr-2 rounded-full shadow-lg shadow-black/35 active:scale-[0.97] transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Sparkles size={14} />
                   </span>
-                  <span className="text-xl sm:text-2xl font-black text-white">
-                    {convert(15)}
+                  <span className="font-black uppercase tracking-wider text-[11px] text-left">
+                    Online Coaching
                   </span>
                 </div>
-              </div>
+
+                <span className="w-7 h-7 rounded-full bg-stone-100 text-stone-900 flex items-center justify-center flex-shrink-0 group-active:translate-x-0.5 group-active:-translate-y-0.5 transition-transform">
+                  <ArrowUpRight size={14} strokeWidth={2.5} />
+                </span>
+              </Link>
+
+              <a
+                href="#programs"
+                className="group flex items-center justify-between gap-2.5 bg-gradient-to-r from-red-700 via-red-800 to-red-900 border border-red-500/40 text-white p-1.5 pr-2 rounded-full shadow-lg shadow-red-950/60 active:scale-[0.97] transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="w-8 h-8 rounded-full bg-white/15 border border-white/15 flex items-center justify-center flex-shrink-0">
+                    <Dumbbell size={14} className="text-white" />
+                  </span>
+                  <span className="font-black uppercase tracking-wider text-[11px] text-left">
+                    Choose a Program
+                  </span>
+                </div>
+
+                <span className="w-7 h-7 rounded-full bg-white text-red-800 flex items-center justify-center flex-shrink-0 shadow-sm group-active:translate-x-0.5 transition-transform">
+                  <ArrowRight size={14} strokeWidth={2.5} />
+                </span>
+              </a>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto lg:mx-0 pt-1">
+            {/* DESKTOP HERO BUTTONS (UNCHANGED) */}
+            <div className="hidden lg:flex flex-row gap-3 max-w-md pt-1">
               <a
                 href="#programs"
                 className="flex-1 inline-flex items-center justify-center gap-2 bg-red-800 hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs px-7 py-4 rounded-2xl transition-all shadow-lg shadow-red-900/40 active:scale-95"
@@ -325,7 +340,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
           {/* DESKTOP PORTRAIT */}
           <div className="hidden lg:block lg:col-span-5 relative">
             <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-stone-800 shadow-2xl group">
